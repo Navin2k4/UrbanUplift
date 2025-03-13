@@ -11,12 +11,13 @@
     "flowbite-react": "^0.10.2",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.10.0",
+    "natural": "^8.0.1",
     "node-schedule": "^2.1.1",
     "nodemailer": "^6.10.0",
     "nodemon": "^3.1.9"
-   },
-  "name": "myproject",
-  "version": "1.0.0",
+  },
+  "name": "urbanuplift",
+  "version": "0.0.0",
   "main": "index.js",
   "type": "module",
   "scripts": {
