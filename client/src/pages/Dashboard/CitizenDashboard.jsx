@@ -840,7 +840,13 @@ const CitizenDashBoard = () => {
         category: issueAnalysis?.category || "other",
         imageUrl,
         priority: selectedPriority,
+        aiPriority: issueAnalysis?.severity || selectedPriority,
         createdById: user.id,
+        // Add location details
+        coordinates: locationDetails?.coordinates || null,
+        address: locationDetails?.address || location,
+        district: locationDetails?.raw?.locality || null,
+        state: locationDetails?.raw?.administrative_area_level_1 || null,
       };
 
       const response = await fetch("/api/report", {

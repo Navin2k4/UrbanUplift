@@ -368,51 +368,40 @@ export const getReportByID = async (req, res) => {
 
 export const createReport = async (req, res) => {
   try {
-    const { description, location, category, imageUrl, priority, createdById } =
-      req.body;
+    const {
+      description,
+      category,
+      location,
+      imageUrl,
+      priority,
+      aiPriority,
+      createdById,
+      coordinates,
+      address,
+      district,
+      state,
+    } = req.body;
 
-    if (!description || !location || !createdById) {
-      return res
-        .status(400)
-        .json({ error: "Description, location, and createdById are required" });
-    }
-
-    // If category is not provided, classify using both description and image
-    let issueCategory = category;
-    let aiPriority = null;
-
-    if (!category) {
-      // Get text-based classification
-      const textCategory = await classifyDescription(description);
-
-      // Get image-based classification if image URL is provided
-      let imageCategory = null;
-      if (imageUrl) {
-        imageCategory = await classifyImage(imageUrl);
-      }
-
-      // Use text category as default, but log both for reference
-      issueCategory = textCategory;
-
-      // Determine AI priority
-      aiPriority = determineAIPriority(textCategory, 0.8);
-      console.log("Classifications:", {
-        textCategory,
-        imageCategory,
-        aiPriority,
+    // Validate required fields
+    if (!description || !category || !location || !createdById) {
+      return res.status(400).json({
+        error: "Missing required fields",
       });
     }
 
     const report = await prisma.issue.create({
       data: {
         description,
+        category,
         location,
-        category: issueCategory,
-        imageUrl: imageUrl || null,
-        priority: priority || "medium",
-        aiPriority: aiPriority,
-        status: "PENDING",
+        imageUrl,
+        priority,
+        aiPriority,
         createdById,
+        coordinates,
+        address,
+        district,
+        state,
       },
     });
 
