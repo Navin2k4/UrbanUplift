@@ -1,0 +1,613 @@
+{
+    "municipal": {
+        "name": "Municipal Corporation",
+        "metrics": {
+            "averageResolutionTime": "3.5 days",
+            "citizenSatisfaction": "78%",
+            "monthlyTrends": {
+                "january": 145,
+                "february": 132,
+                "march": 156
+            }
+        },
+        "issues": {
+            "sanitation": {
+                "total": 156,
+                "pending": 45,
+                "inProgress": 89,
+                "resolved": 22,
+                "locations": [
+                    "North Zone",
+                    "South Zone",
+                    "East Zone",
+                    "West Zone",
+                    "Central Zone"
+                ],
+                "recentIssues": [
+                    {
+                        "id": "SAN-001",
+                        "title": "Garbage Collection Delay",
+                        "location": "North Zone, Ward 7, Block B",
+                        "priority": "high",
+                        "status": "pending",
+                        "dateReported": "2024-03-15",
+                        "description": "Regular garbage collection has been delayed for 3 days",
+                        "assignedTo": "Sanitation Team A",
+                        "expectedResolution": "2024-03-18"
+                    },
+                    {
+                        "id": "SAN-002",
+                        "title": "Public Toilet Maintenance",
+                        "location": "South Zone, Market Area",
+                        "priority": "medium",
+                        "status": "inProgress",
+                        "dateReported": "2024-03-14",
+                        "description": "Maintenance required for public toilet facility",
+                        "assignedTo": "Maintenance Team B",
+                        "expectedResolution": "2024-03-17"
+                    },
+                    {
+                        "id": "SAN-003",
+                        "title": "Street Cleaning Required",
+                        "location": "East Zone, Commercial Street",
+                        "priority": "medium",
+                        "status": "pending",
+                        "dateReported": "2024-03-16",
+                        "description": "Regular street cleaning pending for commercial area",
+                        "assignedTo": "Sanitation Team C",
+                        "expectedResolution": "2024-03-19"
+                    },
+                    {
+                        "id": "SAN-004",
+                        "title": "Waste Segregation Issue",
+                        "location": "West Zone, Residential Complex",
+                        "priority": "low",
+                        "status": "inProgress",
+                        "dateReported": "2024-03-15",
+                        "description": "Improper waste segregation reported in residential area",
+                        "assignedTo": "Sanitation Team D",
+                        "expectedResolution": "2024-03-18"
+                    },
+                    {
+                        "id": "SAN-005",
+                        "title": "Drainage Blockage",
+                        "location": "Central Zone, Main Market",
+                        "priority": "high",
+                        "status": "pending",
+                        "dateReported": "2024-03-16",
+                        "description": "Severe drainage blockage causing water logging",
+                        "assignedTo": "Sanitation Team E",
+                        "expectedResolution": "2024-03-17"
+                    }
+                ]
+            },
+            "waterSupply": {
+                "total": 98,
+                "pending": 23,
+                "inProgress": 45,
+                "resolved": 30,
+                "locations": [
+                    "North Zone",
+                    "South Zone",
+                    "East Zone",
+                    "West Zone",
+                    "Central Zone"
+                ],
+                "recentIssues": [
+                    {
+                        "id": "WAT-001",
+                        "title": "Water Pipeline Leakage",
+                        "location": "East Zone, Main Street",
+                        "priority": "high",
+                        "status": "inProgress",
+                        "dateReported": "2024-03-16",
+                        "description": "Major water pipeline leakage causing water wastage",
+                        "assignedTo": "Water Works Team C",
+                        "expectedResolution": "2024-03-19"
+                    },
+                    {
+                        "id": "WAT-002",
+                        "title": "Low Water Pressure",
+                        "location": "South Zone, Apartment Complex",
+                        "priority": "medium",
+                        "status": "pending",
+                        "dateReported": "2024-03-15",
+                        "description": "Residents reporting low water pressure in morning hours",
+                        "assignedTo": "Water Works Team A",
+                        "expectedResolution": "2024-03-18"
+                    },
+                    {
+                        "id": "WAT-003",
+                        "title": "Water Quality Complaint",
+                        "location": "Central Zone, Market Area",
+                        "priority": "high",
+                        "status": "inProgress",
+                        "dateReported": "2024-03-16",
+                        "description": "Reports of contaminated water supply",
+                        "assignedTo": "Water Quality Team B",
+                        "expectedResolution": "2024-03-17"
+                    },
+                    {
+                        "id": "WAT-004",
+                        "title": "Water Meter Malfunction",
+                        "location": "North Zone, Residential Area",
+                        "priority": "low",
+                        "status": "pending",
+                        "dateReported": "2024-03-15",
+                        "description": "Multiple water meters showing incorrect readings",
+                        "assignedTo": "Water Works Team D",
+                        "expectedResolution": "2024-03-20"
+                    },
+                    {
+                        "id": "WAT-005",
+                        "title": "Hydrant Maintenance",
+                        "location": "West Zone, Industrial Area",
+                        "priority": "medium",
+                        "status": "inProgress",
+                        "dateReported": "2024-03-14",
+                        "description": "Regular maintenance of fire hydrants required",
+                        "assignedTo": "Water Works Team E",
+                        "expectedResolution": "2024-03-19"
+                    }
+                ]
+            }
+        }
+    },
+    "public_works": {
+        "name": "Public Works Department",
+        "metrics": {
+            "averageResolutionTime": "5.2 days",
+            "citizenSatisfaction": "72%",
+            "monthlyTrends": {
+                "january": 95,
+                "february": 82,
+                "march": 89
+            }
+        },
+        "issues": {
+            "roads": {
+                "total": 89,
+                "pending": 34,
+                "inProgress": 45,
+                "resolved": 10,
+                "locations": [
+                    "Highway Division",
+                    "City Roads",
+                    "Rural Roads",
+                    "Bridges"
+                ],
+                "recentIssues": [
+                    {
+                        "id": "ROD-001",
+                        "title": "Pothole Repair Required",
+                        "location": "City Roads, Central Avenue",
+                        "priority": "high",
+                        "status": "pending",
+                        "dateReported": "2024-03-14",
+                        "description": "Large pothole causing traffic issues",
+                        "assignedTo": "Road Maintenance Team A",
+                        "expectedResolution": "2024-03-17"
+                    },
+                    {
+                        "id": "ROD-002",
+                        "title": "Road Marking Faded",
+                        "location": "Highway Division, NH-1",
+                        "priority": "medium",
+                        "status": "pending",
+                        "dateReported": "2024-03-15",
+                        "description": "Road markings need repainting on highway stretch",
+                        "assignedTo": "Road Maintenance Team B",
+                        "expectedResolution": "2024-03-20"
+                    },
+                    {
+                        "id": "ROD-003",
+                        "title": "Street Light Malfunction",
+                        "location": "Rural Roads, Village Access Road",
+                        "priority": "low",
+                        "status": "inProgress",
+                        "dateReported": "2024-03-14",
+                        "description": "Multiple street lights not working",
+                        "assignedTo": "Electrical Team A",
+                        "expectedResolution": "2024-03-19"
+                    },
+                    {
+                        "id": "ROD-004",
+                        "title": "Traffic Signal Repair",
+                        "location": "City Roads, Market Junction",
+                        "priority": "high",
+                        "status": "pending",
+                        "dateReported": "2024-03-16",
+                        "description": "Traffic signal malfunction causing congestion",
+                        "assignedTo": "Signal Team A",
+                        "expectedResolution": "2024-03-17"
+                    },
+                    {
+                        "id": "ROD-005",
+                        "title": "Footpath Repair",
+                        "location": "City Roads, Shopping District",
+                        "priority": "medium",
+                        "status": "inProgress",
+                        "dateReported": "2024-03-15",
+                        "description": "Damaged footpath needs immediate repair",
+                        "assignedTo": "Road Maintenance Team C",
+                        "expectedResolution": "2024-03-18"
+                    }
+                ]
+            },
+            "bridges": {
+                "total": 45,
+                "pending": 12,
+                "inProgress": 23,
+                "resolved": 10,
+                "locations": [
+                    "River Bridges",
+                    "Railway Overbridges",
+                    "Flyovers"
+                ],
+                "recentIssues": [
+                    {
+                        "id": "BRG-001",
+                        "title": "Bridge Inspection Required",
+                        "location": "River Bridges, Gandhi Bridge",
+                        "priority": "medium",
+                        "status": "pending",
+                        "dateReported": "2024-03-15",
+                        "description": "Regular structural inspection due",
+                        "assignedTo": "Bridge Inspection Team B",
+                        "expectedResolution": "2024-03-20"
+                    },
+                    {
+                        "id": "BRG-002",
+                        "title": "Bridge Railing Damage",
+                        "location": "Railway Overbridges, Station Bridge",
+                        "priority": "high",
+                        "status": "pending",
+                        "dateReported": "2024-03-16",
+                        "description": "Safety railing damaged on pedestrian section",
+                        "assignedTo": "Bridge Maintenance Team A",
+                        "expectedResolution": "2024-03-18"
+                    },
+                    {
+                        "id": "BRG-003",
+                        "title": "Surface Repair Needed",
+                        "location": "Flyovers, City Center Flyover",
+                        "priority": "medium",
+                        "status": "inProgress",
+                        "dateReported": "2024-03-15",
+                        "description": "Road surface wearing off on flyover",
+                        "assignedTo": "Road Team C",
+                        "expectedResolution": "2024-03-21"
+                    },
+                    {
+                        "id": "BRG-004",
+                        "title": "Expansion Joint Repair",
+                        "location": "River Bridges, New Bridge",
+                        "priority": "high",
+                        "status": "inProgress",
+                        "dateReported": "2024-03-14",
+                        "description": "Expansion joint damage reported",
+                        "assignedTo": "Bridge Maintenance Team B",
+                        "expectedResolution": "2024-03-19"
+                    },
+                    {
+                        "id": "BRG-005",
+                        "title": "Lighting System Fault",
+                        "location": "Flyovers, Ring Road Flyover",
+                        "priority": "low",
+                        "status": "pending",
+                        "dateReported": "2024-03-16",
+                        "description": "Street lights on flyover not working",
+                        "assignedTo": "Electrical Team B",
+                        "expectedResolution": "2024-03-22"
+                    }
+                ]
+            }
+        }
+    },
+    "urban_dev": {
+        "name": "Urban Development Authority",
+        "metrics": {
+            "averageResolutionTime": "4.8 days",
+            "citizenSatisfaction": "75%",
+            "monthlyTrends": {
+                "january": 112,
+                "february": 98,
+                "march": 124
+            }
+        },
+        "issues": {
+            "planning": {
+                "total": 124,
+                "pending": 38,
+                "inProgress": 56,
+                "resolved": 30,
+                "locations": [
+                    "City Center",
+                    "Suburban Areas",
+                    "Industrial Zone",
+                    "Residential Districts",
+                    "Commercial Areas"
+                ],
+                "recentIssues": [
+                    {
+                        "id": "PLN-001",
+                        "title": "Zoning Violation Report",
+                        "location": "Commercial Areas, Block 7",
+                        "priority": "high",
+                        "status": "pending",
+                        "dateReported": "2024-03-15",
+                        "description": "Unauthorized commercial activity in residential zone",
+                        "assignedTo": "Planning Team A",
+                        "expectedResolution": "2024-03-20"
+                    },
+                    {
+                        "id": "PLN-002",
+                        "title": "Building Height Compliance",
+                        "location": "City Center, Main Street",
+                        "priority": "medium",
+                        "status": "inProgress",
+                        "dateReported": "2024-03-14",
+                        "description": "Building exceeds permitted height limits",
+                        "assignedTo": "Compliance Team B",
+                        "expectedResolution": "2024-03-19"
+                    },
+                    {
+                        "id": "PLN-003",
+                        "title": "Land Use Dispute",
+                        "location": "Suburban Areas, Zone 3",
+                        "priority": "high",
+                        "status": "pending",
+                        "dateReported": "2024-03-16",
+                        "description": "Dispute over land use classification",
+                        "assignedTo": "Legal Team A",
+                        "expectedResolution": "2024-03-21"
+                    },
+                    {
+                        "id": "PLN-004",
+                        "title": "Development Permit Review",
+                        "location": "Industrial Zone, Sector 2",
+                        "priority": "medium",
+                        "status": "inProgress",
+                        "dateReported": "2024-03-15",
+                        "description": "Review of industrial development permit application",
+                        "assignedTo": "Planning Team C",
+                        "expectedResolution": "2024-03-22"
+                    },
+                    {
+                        "id": "PLN-005",
+                        "title": "Green Space Assessment",
+                        "location": "Residential Districts, Area 5",
+                        "priority": "low",
+                        "status": "pending",
+                        "dateReported": "2024-03-14",
+                        "description": "Assessment of proposed green space allocation",
+                        "assignedTo": "Environmental Team A",
+                        "expectedResolution": "2024-03-20"
+                    }
+                ]
+            },
+            "infrastructure": {
+                "total": 86,
+                "pending": 28,
+                "inProgress": 42,
+                "resolved": 16,
+                "locations": [
+                    "City Center",
+                    "Suburban Areas",
+                    "Industrial Zone",
+                    "Mixed-Use Districts"
+                ],
+                "recentIssues": [
+                    {
+                        "id": "INF-001",
+                        "title": "Urban Renewal Project Review",
+                        "location": "City Center, Downtown",
+                        "priority": "high",
+                        "status": "inProgress",
+                        "dateReported": "2024-03-15",
+                        "description": "Review of downtown renovation proposal",
+                        "assignedTo": "Urban Planning Team A",
+                        "expectedResolution": "2024-03-22"
+                    },
+                    {
+                        "id": "INF-002",
+                        "title": "Smart City Integration",
+                        "location": "Mixed-Use Districts, Tech Hub",
+                        "priority": "medium",
+                        "status": "pending",
+                        "dateReported": "2024-03-16",
+                        "description": "Smart infrastructure implementation plan",
+                        "assignedTo": "Smart City Team B",
+                        "expectedResolution": "2024-03-23"
+                    },
+                    {
+                        "id": "INF-003",
+                        "title": "Transit Corridor Planning",
+                        "location": "Suburban Areas, Main Avenue",
+                        "priority": "high",
+                        "status": "pending",
+                        "dateReported": "2024-03-14",
+                        "description": "New transit corridor development plan",
+                        "assignedTo": "Transport Planning Team",
+                        "expectedResolution": "2024-03-21"
+                    },
+                    {
+                        "id": "INF-004",
+                        "title": "Industrial Park Layout",
+                        "location": "Industrial Zone, Block 3",
+                        "priority": "medium",
+                        "status": "inProgress",
+                        "dateReported": "2024-03-15",
+                        "description": "Review of industrial park expansion layout",
+                        "assignedTo": "Industrial Planning Team",
+                        "expectedResolution": "2024-03-20"
+                    },
+                    {
+                        "id": "INF-005",
+                        "title": "Sustainable Design Review",
+                        "location": "Mixed-Use Districts, Green Zone",
+                        "priority": "low",
+                        "status": "pending",
+                        "dateReported": "2024-03-16",
+                        "description": "Sustainable building design assessment",
+                        "assignedTo": "Sustainability Team A",
+                        "expectedResolution": "2024-03-24"
+                    }
+                ]
+            }
+        }
+    },
+    "environment": {
+        "name": "Environmental Protection Department",
+        "metrics": {
+            "averageResolutionTime": "3.9 days",
+            "citizenSatisfaction": "82%",
+            "monthlyTrends": {
+                "january": 134,
+                "february": 128,
+                "march": 142
+            }
+        },
+        "issues": {
+            "pollution": {
+                "total": 142,
+                "pending": 42,
+                "inProgress": 68,
+                "resolved": 32,
+                "locations": [
+                    "Industrial Areas",
+                    "Urban Centers",
+                    "Waterways",
+                    "Green Zones",
+                    "Air Quality Stations"
+                ],
+                "recentIssues": [
+                    {
+                        "id": "ENV-001",
+                        "title": "Air Quality Alert",
+                        "location": "Industrial Areas, Zone 2",
+                        "priority": "high",
+                        "status": "pending",
+                        "dateReported": "2024-03-16",
+                        "description": "High levels of industrial emissions detected",
+                        "assignedTo": "Air Quality Team A",
+                        "expectedResolution": "2024-03-19"
+                    },
+                    {
+                        "id": "ENV-002",
+                        "title": "Water Contamination Report",
+                        "location": "Waterways, River District",
+                        "priority": "high",
+                        "status": "inProgress",
+                        "dateReported": "2024-03-15",
+                        "description": "Chemical contamination in river water",
+                        "assignedTo": "Water Quality Team B",
+                        "expectedResolution": "2024-03-18"
+                    },
+                    {
+                        "id": "ENV-003",
+                        "title": "Noise Pollution Complaint",
+                        "location": "Urban Centers, Downtown",
+                        "priority": "medium",
+                        "status": "pending",
+                        "dateReported": "2024-03-14",
+                        "description": "Excessive construction noise reported",
+                        "assignedTo": "Noise Control Team",
+                        "expectedResolution": "2024-03-20"
+                    },
+                    {
+                        "id": "ENV-004",
+                        "title": "Green Zone Maintenance",
+                        "location": "Green Zones, Central Park",
+                        "priority": "low",
+                        "status": "inProgress",
+                        "dateReported": "2024-03-16",
+                        "description": "Vegetation health assessment needed",
+                        "assignedTo": "Green Space Team A",
+                        "expectedResolution": "2024-03-21"
+                    },
+                    {
+                        "id": "ENV-005",
+                        "title": "Air Quality Monitoring",
+                        "location": "Air Quality Stations, Station 3",
+                        "priority": "medium",
+                        "status": "pending",
+                        "dateReported": "2024-03-15",
+                        "description": "Regular air quality monitoring report",
+                        "assignedTo": "Monitoring Team B",
+                        "expectedResolution": "2024-03-19"
+                    }
+                ]
+            },
+            "conservation": {
+                "total": 98,
+                "pending": 32,
+                "inProgress": 48,
+                "resolved": 18,
+                "locations": [
+                    "Wildlife Areas",
+                    "Forest Reserves",
+                    "Wetlands",
+                    "Protected Parks"
+                ],
+                "recentIssues": [
+                    {
+                        "id": "CON-001",
+                        "title": "Wildlife Habitat Protection",
+                        "location": "Wildlife Areas, Zone 1",
+                        "priority": "high",
+                        "status": "inProgress",
+                        "dateReported": "2024-03-15",
+                        "description": "Assessment of wildlife corridor disruption",
+                        "assignedTo": "Wildlife Team A",
+                        "expectedResolution": "2024-03-20"
+                    },
+                    {
+                        "id": "CON-002",
+                        "title": "Forest Conservation Plan",
+                        "location": "Forest Reserves, Area 2",
+                        "priority": "medium",
+                        "status": "pending",
+                        "dateReported": "2024-03-16",
+                        "description": "Review of forest management plan",
+                        "assignedTo": "Forest Conservation Team",
+                        "expectedResolution": "2024-03-22"
+                    },
+                    {
+                        "id": "CON-003",
+                        "title": "Wetland Preservation",
+                        "location": "Wetlands, Site 4",
+                        "priority": "high",
+                        "status": "pending",
+                        "dateReported": "2024-03-14",
+                        "description": "Wetland ecosystem assessment",
+                        "assignedTo": "Wetland Team B",
+                        "expectedResolution": "2024-03-21"
+                    },
+                    {
+                        "id": "CON-004",
+                        "title": "Park Biodiversity Survey",
+                        "location": "Protected Parks, Central Reserve",
+                        "priority": "medium",
+                        "status": "inProgress",
+                        "dateReported": "2024-03-15",
+                        "description": "Annual biodiversity assessment",
+                        "assignedTo": "Biodiversity Team A",
+                        "expectedResolution": "2024-03-23"
+                    },
+                    {
+                        "id": "CON-005",
+                        "title": "Habitat Restoration",
+                        "location": "Wildlife Areas, Zone 3",
+                        "priority": "low",
+                        "status": "pending",
+                        "dateReported": "2024-03-16",
+                        "description": "Natural habitat restoration project",
+                        "assignedTo": "Restoration Team C",
+                        "expectedResolution": "2024-03-24"
+                    }
+                ]
+            }
+        }
+    }
+}

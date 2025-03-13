@@ -6,13 +6,11 @@ dotenv.config();
 const prisma = new PrismaClient();
 const HF_API_KEY = process.env.HUGGINGFACE_API_KEY;
 
-// Using zero-shot classification model
 const ZERO_SHOT_MODEL_URL =
   "https://api-inference.huggingface.co/models/facebook/bart-large-mnli";
 const IMAGE_MODEL_URL =
   "https://api-inference.huggingface.co/models/google/vit-base-patch16-224";
 
-// List of possible issue categories
 const issueCategories = [
   "pothole",
   "drainage leakage",
@@ -24,7 +22,6 @@ const issueCategories = [
   "other",
 ];
 
-// Get dashboard statistics
 export const getDashboardStats = async (req, res) => {
   try {
     const [totalIssues, pendingIssues, inProgressIssues, resolvedIssues] =
@@ -35,7 +32,6 @@ export const getDashboardStats = async (req, res) => {
         prisma.issue.count({ where: { status: "resolved" } }),
       ]);
 
-    // Get monthly statistics for the last 6 months
     const sixMonthsAgo = new Date();
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
@@ -49,7 +45,7 @@ export const getDashboardStats = async (req, res) => {
       _count: true,
     });
 
-    // Get category distribution
+  
     const categoryStats = await prisma.issue.groupBy({
       by: ["category"],
       _count: true,
@@ -70,7 +66,6 @@ export const getDashboardStats = async (req, res) => {
   }
 };
 
-// Get recent activities
 export const getRecentActivities = async (req, res) => {
   try {
     const recentIssues = await prisma.issue.findMany({
@@ -94,7 +89,6 @@ export const getRecentActivities = async (req, res) => {
   }
 };
 
-// Image classification function
 const classifyImage = async (imageUrl) => {
   try {
     const response = await axios.post(
@@ -104,14 +98,13 @@ const classifyImage = async (imageUrl) => {
     );
 
     const predictions = response.data;
-    return predictions[0].label; // Get the highest confidence label
+    return predictions[0].label;
   } catch (error) {
     console.error("Error classifying image:", error);
     return null;
   }
 };
 
-// Helper function to determine priority based on category and confidence
 const determineAIPriority = (category, confidence) => {
   const highPriorityIssues = [
     "sewage overflow",
@@ -132,12 +125,9 @@ const determineAIPriority = (category, confidence) => {
   return "low";
 };
 
-// Classification function
 export const classifyIssue = async (req, res) => {
   try {
     const { description, imageUrl } = req.body;
-
-    // Check if at least one of description or imageUrl is provided
     if (!description && !imageUrl) {
       return res
         .status(400)
@@ -148,7 +138,6 @@ export const classifyIssue = async (req, res) => {
     let textConfidence = null;
     let imageCategory = null;
 
-    // Classify text if description is provided
     if (description) {
       const textResponse = await axios.post(
         ZERO_SHOT_MODEL_URL,
@@ -162,7 +151,6 @@ export const classifyIssue = async (req, res) => {
       textConfidence = textResponse.data.scores[0];
     }
 
-    // Classify image if imageUrl is provided
     if (imageUrl) {
       const imageResponse = await axios.post(
         IMAGE_MODEL_URL,
@@ -172,12 +160,10 @@ export const classifyIssue = async (req, res) => {
       imageCategory = imageResponse.data[0].label;
     }
 
-    // Determine final category and confidence
     let finalCategory;
     let finalConfidence;
 
     if (textCategory && imageCategory) {
-      // If both classifications are available, use text classification as primary
       finalCategory = textCategory;
       finalConfidence = textConfidence;
     } else if (textCategory) {
@@ -185,7 +171,7 @@ export const classifyIssue = async (req, res) => {
       finalConfidence = textConfidence;
     } else {
       finalCategory = imageCategory;
-      finalConfidence = 0.8; // Default confidence for image classification
+      finalConfidence = 0.8; 
     }
 
     // Determine AI priority

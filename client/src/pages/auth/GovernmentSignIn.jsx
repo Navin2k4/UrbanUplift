@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import { useNavigate } from "react-router-dom"; // Add this import
 import { Card } from "primereact/card";
 import { InputText } from "primereact/inputtext";
 import { Password } from "primereact/password";
@@ -11,6 +12,7 @@ import { Toast } from "primereact/toast";
 import axios from "axios";
 
 const GovernmentSignIn = () => {
+  const navigate = useNavigate(); // Add this line to initialize navigate
   const [formData, setFormData] = useState({
     employeeId: "",
     department: "",
@@ -26,7 +28,6 @@ const GovernmentSignIn = () => {
     { label: "Public Works", value: "public_works" },
     { label: "Urban Development", value: "urban_dev" },
     { label: "Environmental Protection", value: "environment" },
-    { label: "Transportation", value: "transport" },
   ];
 
   const handleSubmit = async (e) => {
@@ -60,6 +61,7 @@ const GovernmentSignIn = () => {
     } finally {
       setLoading(false);
     }
+    navigate(`/dashboard/${formData.department}`);
   };
 
   return (

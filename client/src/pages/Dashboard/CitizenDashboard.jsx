@@ -44,6 +44,8 @@ import {
   Campaign,
   CheckCircle,
   Assessment,
+  AccessTime,
+  Refresh,
 } from "@mui/icons-material";
 import {
   BarChart,
@@ -179,6 +181,246 @@ function TabPanel(props) {
   );
 }
 
+// Add this component for issue cards
+const IssueCard = ({ issue }) => (
+  <Card sx={{ mb: 2, position: "relative" }}>
+    <Box sx={{ position: "relative" }}>
+      {issue.imageUrl ? (
+        <img
+          src={issue.imageUrl}
+          alt={issue.category}
+          style={{
+            width: "100%",
+            height: "200px",
+            objectFit: "cover",
+          }}
+        />
+      ) : (
+        <Box
+          sx={{
+            width: "100%",
+            height: "200px",
+            bgcolor: "grey.200",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Construction sx={{ fontSize: 60, color: "grey.400" }} />
+        </Box>
+      )}
+      <Box
+        sx={{
+          position: "absolute",
+          top: 10,
+          right: 10,
+          display: "flex",
+          gap: 1,
+        }}
+      >
+        <Chip
+          label={issue.status}
+          color={
+            issue.status === "resolved"
+              ? "success"
+              : issue.status === "in-progress"
+              ? "warning"
+              : "error"
+          }
+          sx={{ textTransform: "capitalize" }}
+        />
+        <Chip
+          label={issue.priority || "medium"}
+          color={
+            issue.priority === "high"
+              ? "error"
+              : issue.priority === "medium"
+              ? "warning"
+              : "success"
+          }
+          sx={{ textTransform: "capitalize" }}
+        />
+      </Box>
+    </Box>
+    <CardContent>
+      <Typography variant="h6" gutterBottom>
+        {issue.category}
+      </Typography>
+      <Typography variant="body2" color="text.secondary" paragraph>
+        {issue.description}
+      </Typography>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 2 }}>
+        <LocationOn color="action" fontSize="small" />
+        <Typography variant="body2" color="text.secondary">
+          {issue.location}
+        </Typography>
+      </Box>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 1 }}>
+        <AccessTime color="action" fontSize="small" />
+        <Typography variant="body2" color="text.secondary">
+          {new Date(issue.createdAt).toLocaleDateString()}
+        </Typography>
+      </Box>
+    </CardContent>
+  </Card>
+);
+
+// Update the Recent Activities section
+const RecentActivitiesSection = ({ activities }) => (
+  <Grid item xs={12}>
+    <motion.div
+      variants={fadeInUp}
+      initial="initial"
+      animate="animate"
+      transition={{ delay: 0.4 }}
+    >
+      <DashboardCard>
+        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
+          <Typography variant="h6" sx={{ color: "#22c55e" }}>
+            Recent Activities
+          </Typography>
+          <Button
+            startIcon={<Refresh />}
+            onClick={() => fetchDashboardData()}
+            sx={{ color: "#22c55e" }}
+          >
+            Refresh
+          </Button>
+        </Box>
+        <Grid container spacing={3}>
+          {activities.map((activity) => (
+            <Grid item xs={12} md={6} lg={4} key={activity.id}>
+              <IssueCard issue={activity} />
+            </Grid>
+          ))}
+        </Grid>
+      </DashboardCard>
+    </motion.div>
+  </Grid>
+);
+
+// Update the My Issues Tab
+const MyIssuesTab = ({ issues }) => (
+  <Grid container spacing={3}>
+    {Object.entries(issues).map(([status, statusIssues]) => (
+      <Grid item xs={12} key={status}>
+        <DashboardCard>
+          <Typography
+            variant="h6"
+            gutterBottom
+            sx={{ color: "#22c55e", mb: 3 }}
+          >
+            {status.charAt(0).toUpperCase() + status.slice(1)} Issues (
+            {statusIssues.length})
+          </Typography>
+          <Grid container spacing={3}>
+            {statusIssues.map((issue) => (
+              <Grid item xs={12} md={6} lg={4} key={issue.id}>
+                <IssueCard issue={issue} />
+              </Grid>
+            ))}
+          </Grid>
+        </DashboardCard>
+      </Grid>
+    ))}
+  </Grid>
+);
+
+const formatImageAnalysisToDescription = (category) => {
+  // Remove redundant terms and format the category
+  const uniqueTerms = [...new Set(category.split(", "))];
+  const mainTerm = uniqueTerms[0];
+
+  // Create a descriptive sentence
+  return `There appears to be a ${mainTerm} issue that requires attention. The image shows ${uniqueTerms.join(
+    ", "
+  )}.`;
+};
+
+const getPlaceFromCoordinates = async (latitude, longitude) => {
+  try {
+    return new Promise((resolve, reject) => {
+      const geocoder = new window.google.maps.Geocoder();
+      const latlng = { lat: parseFloat(latitude), lng: parseFloat(longitude) };
+
+      geocoder.geocode({ location: latlng }, (results, status) => {
+        if (status === "OK") {
+          if (results[0]) {
+            const result = results[0];
+
+            // Extract address components
+            const addressComponents = {
+              street_number: "",
+              route: "",
+              neighborhood: "",
+              locality: "",
+              administrative_area_level_1: "",
+              country: "",
+            };
+
+            result.address_components.forEach((component) => {
+              component.types.forEach((type) => {
+                if (addressComponents.hasOwnProperty(type)) {
+                  addressComponents[type] = component.long_name;
+                }
+              });
+            });
+
+            // Create a user-friendly location string
+            let locationString = "";
+            if (addressComponents.street_number && addressComponents.route) {
+              locationString += `${addressComponents.street_number} ${addressComponents.route}`;
+            }
+            if (addressComponents.neighborhood) {
+              locationString += locationString
+                ? `, ${addressComponents.neighborhood}`
+                : addressComponents.neighborhood;
+            }
+            if (addressComponents.locality) {
+              locationString += locationString
+                ? `, ${addressComponents.locality}`
+                : addressComponents.locality;
+            }
+            if (addressComponents.administrative_area_level_1) {
+              locationString += locationString
+                ? `, ${addressComponents.administrative_area_level_1}`
+                : addressComponents.administrative_area_level_1;
+            }
+
+            // If we couldn't build a proper location string, fall back to formatted address
+            const finalLocation = locationString || result.formatted_address;
+
+            resolve({
+              address: finalLocation,
+              formattedAddress: result.formatted_address,
+              coordinates: `${latitude}, ${longitude}`,
+              raw: addressComponents,
+              placeId: result.place_id,
+            });
+          } else {
+            resolve({
+              address: `${latitude}, ${longitude}`,
+              formattedAddress: `${latitude}, ${longitude}`,
+              coordinates: `${latitude}, ${longitude}`,
+              raw: null,
+            });
+          }
+        } else {
+          reject(new Error(`Geocoder failed: ${status}`));
+        }
+      });
+    });
+  } catch (error) {
+    console.error("Error getting place name:", error);
+    return {
+      address: `${latitude}, ${longitude}`,
+      formattedAddress: `${latitude}, ${longitude}`,
+      coordinates: `${latitude}, ${longitude}`,
+      raw: null,
+    };
+  }
+};
+
 const CitizenDashBoard = () => {
   const [tabValue, setTabValue] = useState(0);
   const [imageUrl, setImageUrl] = useState("");
@@ -202,6 +444,34 @@ const CitizenDashBoard = () => {
   });
 
   const [selectedPriority, setSelectedPriority] = useState("medium");
+  const [locationDetails, setLocationDetails] = useState(null);
+  const mapRef = useRef(null);
+  const autocompleteRef = useRef(null);
+
+  // Initialize Google Maps Autocomplete
+  useEffect(() => {
+    if (window.google && !autocompleteRef.current) {
+      const input = document.getElementById("location-input");
+      if (input) {
+        autocompleteRef.current = new window.google.maps.places.Autocomplete(
+          input
+        );
+        autocompleteRef.current.addListener("place_changed", () => {
+          const place = autocompleteRef.current.getPlace();
+          if (place.geometry) {
+            const details = {
+              address: place.formatted_address,
+              placeName: place.name,
+              vicinity: place.vicinity,
+              coordinates: `${place.geometry.location.lat()}, ${place.geometry.location.lng()}`,
+            };
+            setLocation(place.formatted_address);
+            setLocationDetails(details);
+          }
+        });
+      }
+    }
+  }, []);
 
   // Fetch dashboard data
   const fetchDashboardData = async () => {
@@ -282,7 +552,6 @@ const CitizenDashBoard = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          description,
           imageUrl: url,
         }),
       });
@@ -292,26 +561,28 @@ const CitizenDashBoard = () => {
       }
 
       const data = await response.json();
-      const { category, confidence, textAnalysis, imageAnalysis, aiPriority } =
-        data;
+      const { category, confidence, imageAnalysis, aiPriority } = data;
+
+      // Auto-generate description from image analysis
+      const generatedDescription = formatImageAnalysisToDescription(
+        imageAnalysis.category
+      );
+      setDescription(generatedDescription);
 
       setIssueAnalysis({
         category,
         confidence,
         severity: aiPriority,
-        textAnalysis,
+        textAnalysis: null,
         imageAnalysis,
       });
 
-      // Set the suggested priority but allow user to change it
+      // Set the suggested priority
       setSelectedPriority(aiPriority);
 
       let message = `Image uploaded and analyzed!`;
       if (imageAnalysis) {
         message += ` Image suggests: ${imageAnalysis.category}`;
-      }
-      if (textAnalysis) {
-        message += ` Text suggests: ${textAnalysis.category}`;
       }
       message += ` Final category: ${category} (Suggested Priority: ${aiPriority})`;
 
@@ -330,81 +601,62 @@ const CitizenDashBoard = () => {
     }
   };
 
-  const handleDescriptionChange = async (event) => {
-    const newDescription = event.target.value;
-    setDescription(newDescription);
+  const handleLocationClick = async () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(async (position) => {
+        const { latitude, longitude } = position.coords;
 
-    if (newDescription.length > 20) {
-      try {
-        const response = await fetch("/api/reports/classify", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            description: newDescription,
-            imageUrl: imageUrl || null,
-          }),
-        });
+        try {
+          // Get place details from coordinates
+          const locationDetails = await getPlaceFromCoordinates(
+            latitude,
+            longitude
+          );
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+          // Set the location with the formatted address
+          setLocation(locationDetails.address);
+
+          // Set additional location details
+          setLocationDetails({
+            ...locationDetails,
+            placeName:
+              locationDetails.raw?.locality ||
+              locationDetails.raw?.neighborhood ||
+              "",
+            vicinity: locationDetails.raw?.administrative_area_level_1 || "",
+          });
+
+          // If we have a place ID, we can get even more detailed information
+          if (locationDetails.placeId) {
+            const placesService = new window.google.maps.places.PlacesService(
+              document.createElement("div")
+            );
+            placesService.getDetails(
+              {
+                placeId: locationDetails.placeId,
+                fields: ["name", "formatted_address", "geometry", "vicinity"],
+              },
+              (place, status) => {
+                if (status === "OK" && place) {
+                  setLocationDetails((prev) => ({
+                    ...prev,
+                    placeName: place.name || prev.placeName,
+                    vicinity: place.vicinity || prev.vicinity,
+                  }));
+                }
+              }
+            );
+          }
+        } catch (error) {
+          console.error("Error getting location details:", error);
+          setAlert({
+            show: true,
+            message: "Error getting location details",
+            severity: "error",
+          });
         }
-
-        const data = await response.json();
-        const { category, confidence, textAnalysis, imageAnalysis } = data;
-
-        setIssueAnalysis({
-          category,
-          confidence,
-          severity: getSeverityLevel(category, confidence),
-          textAnalysis,
-          imageAnalysis,
-        });
-
-        let message = `Issue analyzed!`;
-        if (textAnalysis) {
-          message += ` Text suggests: ${textAnalysis.category}`;
-        }
-        if (imageAnalysis) {
-          message += ` Image suggests: ${imageAnalysis.category}`;
-        }
-        message += ` Final category: ${category}`;
-
-        setAlert({
-          show: true,
-          message,
-          severity: "info",
-        });
-      } catch (error) {
-        console.error("Error classifying issue:", error);
-        setAlert({
-          show: true,
-          message: "Error analyzing description",
-          severity: "error",
-        });
-      }
+      });
     }
-  };
-
-  const getSeverityLevel = (category, confidence) => {
-    const highPriorityIssues = [
-      "sewage overflow",
-      "water pipeline leakage",
-      "drainage leakage",
-    ];
-    const mediumPriorityIssues = [
-      "pothole",
-      "fused streetlight",
-      "broken sidewalk",
-    ];
-
-    if (highPriorityIssues.includes(category) && confidence > 0.7) {
-      return "HIGH";
-    } else if (mediumPriorityIssues.includes(category) || confidence > 0.5) {
-      return "MEDIUM";
-    }
-    return "LOW";
   };
 
   const handleSubmit = async () => {
@@ -458,28 +710,28 @@ const CitizenDashBoard = () => {
   };
 
   // Update the Stats Cards section in the Dashboard Tab
-  const statsCards = [
-    {
-      title: "Active Requests",
-      value: dashboardStats?.statusDistribution?.pending || 0,
-      icon: <Assignment />,
-    },
-    {
-      title: "In Progress",
-      value: dashboardStats?.statusDistribution?.inProgress || 0,
-      icon: <Construction />,
-    },
-    {
-      title: "Resolved Issues",
-      value: dashboardStats?.statusDistribution?.resolved || 0,
-      icon: <CheckCircle />,
-    },
-    {
-      title: "Total Reports",
-      value: dashboardStats?.totalIssues || 0,
-      icon: <Assessment />,
-    },
-  ];
+  // const statsCards = [
+  //   {
+  //     title: "Active Requests",
+  //     value: dashboardStats?.statusDistribution?.pending || 0,
+  //     icon: <Assignment />,
+  //   },
+  //   {
+  //     title: "In Progress",
+  //     value: dashboardStats?.statusDistribution?.inProgress || 0,
+  //     icon: <Construction />,
+  //   },
+  //   {
+  //     title: "Resolved Issues",
+  //     value: dashboardStats?.statusDistribution?.resolved || 0,
+  //     icon: <CheckCircle />,
+  //   },
+  //   {
+  //     title: "Total Reports",
+  //     value: dashboardStats?.totalIssues || 0,
+  //     icon: <Assessment />,
+  //   },
+  // ];
 
   // Update the Service Requests Chart data
   const serviceRequestData =
@@ -494,61 +746,6 @@ const CitizenDashBoard = () => {
       name: stat.category,
       value: stat._count,
     })) || [];
-
-  // Update the My Issues Tab to use real data
-  const renderIssuesList = (issues, status) => (
-    <Grid item xs={12} md={6} key={status}>
-      <DashboardCard>
-        <Typography variant="h6" gutterBottom sx={{ color: "#22c55e" }}>
-          {status}
-        </Typography>
-        <List>
-          {issues.map((issue) => (
-            <ListItem key={issue.id} divider>
-              <ListItemAvatar>
-                <Avatar sx={{ bgcolor: "#22c55e" }}>
-                  <Construction />
-                </Avatar>
-              </ListItemAvatar>
-              <ListItemText
-                primary={issue.description}
-                secondary={
-                  <React.Fragment>
-                    <Typography
-                      component="span"
-                      variant="body2"
-                      color="text.primary"
-                    >
-                      {issue.location}
-                    </Typography>
-                    {` — ${new Date(issue.createdAt).toLocaleDateString()}`}
-                  </React.Fragment>
-                }
-              />
-              <Box sx={{ width: "100px", ml: 2 }}>
-                <LinearProgress
-                  variant="determinate"
-                  value={
-                    issue.status === "resolved"
-                      ? 100
-                      : issue.status === "in-progress"
-                      ? 60
-                      : 20
-                  }
-                  sx={{
-                    backgroundColor: "#dcfce7",
-                    "& .MuiLinearProgress-bar": {
-                      backgroundColor: "#22c55e",
-                    },
-                  }}
-                />
-              </Box>
-            </ListItem>
-          ))}
-        </List>
-      </DashboardCard>
-    </Grid>
-  );
 
   return (
     <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
@@ -627,7 +824,7 @@ const CitizenDashBoard = () => {
                   animate="animate"
                   transition={{ delay: index * 0.1 }}
                 >
-                  <StatsCard>
+                  {/* <StatsCard>
                     <CardContent>
                       <Box
                         sx={{
@@ -647,7 +844,7 @@ const CitizenDashBoard = () => {
                         </IconButton>
                       </Box>
                     </CardContent>
-                  </StatsCard>
+                  </StatsCard> */}
                 </motion.div>
               </Grid>
             ))}
@@ -723,79 +920,8 @@ const CitizenDashBoard = () => {
               </motion.div>
             </Grid>
 
-            {/* Recent Activities */}
-            <Grid item xs={12}>
-              <motion.div
-                variants={fadeInUp}
-                initial="initial"
-                animate="animate"
-                transition={{ delay: 0.4 }}
-              >
-                <DashboardCard>
-                  <Typography
-                    variant="h6"
-                    gutterBottom
-                    sx={{ color: "#22c55e" }}
-                  >
-                    Recent Activities
-                  </Typography>
-                  <List>
-                    {recentActivities.map((activity, index) => (
-                      <motion.div
-                        key={activity.id}
-                        variants={scaleIn}
-                        initial="initial"
-                        animate="animate"
-                        transition={{ delay: index * 0.1 }}
-                      >
-                        <ListItem divider>
-                          <ListItemAvatar>
-                            <Avatar sx={{ bgcolor: "#22c55e" }}>
-                              <Construction />
-                            </Avatar>
-                          </ListItemAvatar>
-                          <ListItemText
-                            primary={activity.type}
-                            secondary={
-                              <React.Fragment>
-                                <Typography
-                                  component="span"
-                                  variant="body2"
-                                  color="text.primary"
-                                >
-                                  {activity.location}
-                                </Typography>
-                                {` — ${activity.status} (${activity.date})`}
-                              </React.Fragment>
-                            }
-                          />
-                          <Box sx={{ width: "100px", ml: 2 }}>
-                            <LinearProgress
-                              variant="determinate"
-                              value={
-                                activity.status === "Completed"
-                                  ? 100
-                                  : activity.status === "In Progress"
-                                  ? 60
-                                  : activity.status === "In Review"
-                                  ? 80
-                                  : 20
-                              }
-                              sx={{
-                                backgroundColor: "#dcfce7",
-                                "& .MuiLinearProgress-bar": {
-                                  backgroundColor: "#22c55e",
-                                },
-                              }}
-                            />
-                          </Box>
-                        </ListItem>
-                      </motion.div>
-                    ))}
-                  </List>
-                </DashboardCard>
-              </motion.div>
-            </Grid>
+            {/* Updated Recent Activities */}
+            <RecentActivitiesSection activities={recentActivities} />
           </Grid>
         </TabPanel>
 
@@ -883,42 +1009,62 @@ const CitizenDashBoard = () => {
                   label="Describe the Problem"
                   variant="outlined"
                   value={description}
-                  onChange={handleDescriptionChange}
+                  onChange={(e) => setDescription(e.target.value)}
                   helperText="AI will analyze your description to classify the issue"
                 />
               </Grid>
 
               <Grid item xs={12}>
                 <TextField
+                  id="location-input"
                   fullWidth
                   label="Location"
                   variant="outlined"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
+                  placeholder="Search for a location or use current location"
                   InputProps={{
                     endAdornment: (
-                      <>
+                      <Box
+                        sx={{ display: "flex", gap: 1, alignItems: "center" }}
+                      >
                         <LocationOn color="action" />
-                        <Button
-                          size="small"
-                          onClick={() => {
-                            if (navigator.geolocation) {
-                              navigator.geolocation.getCurrentPosition(
-                                (position) => {
-                                  setLocation(
-                                    `${position.coords.latitude}, ${position.coords.longitude}`
-                                  );
-                                }
-                              );
-                            }
-                          }}
-                        >
+                        <Button size="small" onClick={handleLocationClick}>
                           Use Current Location
                         </Button>
-                      </>
+                      </Box>
                     ),
                   }}
                 />
+                {locationDetails && (
+                  <Box
+                    sx={{ mt: 1, p: 1, bgcolor: "grey.50", borderRadius: 1 }}
+                  >
+                    {locationDetails.raw && (
+                      <>
+                        {locationDetails.raw.locality && (
+                          <Typography variant="body2" color="text.secondary">
+                            City: {locationDetails.raw.locality}
+                          </Typography>
+                        )}
+                        {locationDetails.raw.neighborhood && (
+                          <Typography variant="body2" color="text.secondary">
+                            Neighborhood: {locationDetails.raw.neighborhood}
+                          </Typography>
+                        )}
+                        {locationDetails.raw.administrative_area_level_1 && (
+                          <Typography variant="body2" color="text.secondary">
+                            State/Region:{" "}
+                            {locationDetails.raw.administrative_area_level_1}
+                          </Typography>
+                        )}
+                      </>
+                    )}
+                    <Typography variant="body2" color="text.secondary">
+                      Full Address: {locationDetails.formattedAddress}
+                    </Typography>
+                  </Box>
+                )}
               </Grid>
 
               <Grid item xs={12}>
@@ -983,11 +1129,7 @@ const CitizenDashBoard = () => {
 
         {/* My Issues Tab */}
         <TabPanel value={tabValue} index={2}>
-          <Grid container spacing={3}>
-            {renderIssuesList(myIssues.pending, "Pending")}
-            {renderIssuesList(myIssues.inProgress, "In Progress")}
-            {renderIssuesList(myIssues.resolved, "Resolved")}
-          </Grid>
+          <MyIssuesTab issues={myIssues} />
         </TabPanel>
 
         {/* Feedback Tab */}

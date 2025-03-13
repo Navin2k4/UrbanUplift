@@ -11,22 +11,22 @@ const NavBar = () => {
     {
       label: "Citizens",
       icon: "pi pi-user",
-      url: "/signin/citizen",
+      url: "/dashboard/citizen",
     },
     {
       label: "NGO's",
       icon: "pi pi-building",
-      url: "/signin/ngo",
+      url: "/dashboard/ngo",
     },
     {
       label: "Officials",
       icon: "pi pi-shield",
-      url: "/signin/government",
+      url: "/dashboard/officials",
     },
     {
       label: "Organizations",
       icon: "pi pi-book",
-      url: "/signin/college",
+      url: "/dashboard/college",
     },
   ];
 
