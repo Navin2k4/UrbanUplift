@@ -13,7 +13,7 @@ import {
 
 const router = express.Router();
 
-// Dashboard routes
+// Dashboard r
 router.get("/stats", getDashboardStats);
 router.get("/recent", getRecentActivities);
 router.get("/status/:status", getReportsByStatus);
