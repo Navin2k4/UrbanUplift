@@ -201,6 +201,8 @@ const CitizenDashBoard = () => {
     resolved: [],
   });
 
+  const [selectedPriority, setSelectedPriority] = useState("medium");
+
   // Fetch dashboard data
   const fetchDashboardData = async () => {
     try {
@@ -274,7 +276,7 @@ const CitizenDashBoard = () => {
   const handleImageUpload = async (url) => {
     setImageUrl(url);
     try {
-      const response = await fetch("/api/issues/classify", {
+      const response = await fetch("/api/reports/classify", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -290,17 +292,32 @@ const CitizenDashBoard = () => {
       }
 
       const data = await response.json();
-      const { category, confidence } = data;
+      const { category, confidence, textAnalysis, imageAnalysis, aiPriority } =
+        data;
 
       setIssueAnalysis({
         category,
         confidence,
-        severity: getSeverityLevel(category, confidence),
+        severity: aiPriority,
+        textAnalysis,
+        imageAnalysis,
       });
+
+      // Set the suggested priority but allow user to change it
+      setSelectedPriority(aiPriority);
+
+      let message = `Image uploaded and analyzed!`;
+      if (imageAnalysis) {
+        message += ` Image suggests: ${imageAnalysis.category}`;
+      }
+      if (textAnalysis) {
+        message += ` Text suggests: ${textAnalysis.category}`;
+      }
+      message += ` Final category: ${category} (Suggested Priority: ${aiPriority})`;
 
       setAlert({
         show: true,
-        message: `Image uploaded and analyzed! Category: ${category}`,
+        message,
         severity: "success",
       });
     } catch (error) {
@@ -326,6 +343,7 @@ const CitizenDashBoard = () => {
           },
           body: JSON.stringify({
             description: newDescription,
+            imageUrl: imageUrl || null,
           }),
         });
 
@@ -334,19 +352,28 @@ const CitizenDashBoard = () => {
         }
 
         const data = await response.json();
-        const { category, confidence } = data;
+        const { category, confidence, textAnalysis, imageAnalysis } = data;
 
         setIssueAnalysis({
           category,
           confidence,
           severity: getSeverityLevel(category, confidence),
+          textAnalysis,
+          imageAnalysis,
         });
+
+        let message = `Issue analyzed!`;
+        if (textAnalysis) {
+          message += ` Text suggests: ${textAnalysis.category}`;
+        }
+        if (imageAnalysis) {
+          message += ` Image suggests: ${imageAnalysis.category}`;
+        }
+        message += ` Final category: ${category}`;
 
         setAlert({
           show: true,
-          message: `Issue classified as ${category} (${Math.round(
-            confidence * 100
-          )}% confidence)`,
+          message,
           severity: "info",
         });
       } catch (error) {
@@ -388,6 +415,7 @@ const CitizenDashBoard = () => {
         location,
         category: issueAnalysis?.category || "other",
         imageUrl,
+        priority: selectedPriority,
       };
 
       const response = await fetch("/api/reports", {
@@ -415,6 +443,7 @@ const CitizenDashBoard = () => {
         setDescription("");
         setLocation("");
         setIssueAnalysis(null);
+        setSelectedPriority("medium");
       }
     } catch (error) {
       console.error("Error submitting issue:", error);
@@ -453,16 +482,18 @@ const CitizenDashBoard = () => {
   ];
 
   // Update the Service Requests Chart data
-  const serviceRequestData = dashboardStats?.monthlyStats?.map((stat) => ({
-    category: stat.category,
-    count: stat._count,
-  })) || [];
+  const serviceRequestData =
+    dashboardStats?.monthlyStats?.map((stat) => ({
+      category: stat.category,
+      count: stat._count,
+    })) || [];
 
   // Update the Environmental Metrics data
-  const environmentalData = dashboardStats?.categoryStats?.map((stat) => ({
-    name: stat.category,
-    value: stat._count,
-  })) || [];
+  const environmentalData =
+    dashboardStats?.categoryStats?.map((stat) => ({
+      name: stat.category,
+      value: stat._count,
+    })) || [];
 
   // Update the My Issues Tab to use real data
   const renderIssuesList = (issues, status) => (
@@ -483,7 +514,11 @@ const CitizenDashBoard = () => {
                 primary={issue.description}
                 secondary={
                   <React.Fragment>
-                    <Typography component="span" variant="body2" color="text.primary">
+                    <Typography
+                      component="span"
+                      variant="body2"
+                      color="text.primary"
+                    >
                       {issue.location}
                     </Typography>
                     {` — ${new Date(issue.createdAt).toLocaleDateString()}`}
@@ -884,6 +919,49 @@ const CitizenDashBoard = () => {
                     ),
                   }}
                 />
+              </Grid>
+
+              <Grid item xs={12}>
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="subtitle1" gutterBottom>
+                    Priority Level{" "}
+                    {issueAnalysis &&
+                      `(AI Suggested: ${issueAnalysis.severity})`}
+                  </Typography>
+                  <Box sx={{ display: "flex", gap: 1 }}>
+                    {["low", "medium", "high"].map((priority) => (
+                      <Button
+                        key={priority}
+                        variant={
+                          selectedPriority === priority
+                            ? "contained"
+                            : "outlined"
+                        }
+                        onClick={() => setSelectedPriority(priority)}
+                        sx={{
+                          bgcolor:
+                            selectedPriority === priority
+                              ? priority === "high"
+                                ? "#ef4444"
+                                : priority === "medium"
+                                ? "#f97316"
+                                : "#22c55e"
+                              : "transparent",
+                          "&:hover": {
+                            bgcolor:
+                              priority === "high"
+                                ? "#dc2626"
+                                : priority === "medium"
+                                ? "#ea580c"
+                                : "#16a34a",
+                          },
+                        }}
+                      >
+                        {priority.toUpperCase()}
+                      </Button>
+                    ))}
+                  </Box>
+                </Box>
               </Grid>
 
               <Grid item xs={12}>

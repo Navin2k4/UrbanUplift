@@ -9,6 +9,8 @@ const HF_API_KEY = process.env.HUGGINGFACE_API_KEY;
 // Using zero-shot classification model
 const ZERO_SHOT_MODEL_URL =
   "https://api-inference.huggingface.co/models/facebook/bart-large-mnli";
+const IMAGE_MODEL_URL =
+  "https://api-inference.huggingface.co/models/google/vit-base-patch16-224";
 
 // List of possible issue categories
 const issueCategories = [
@@ -25,19 +27,20 @@ const issueCategories = [
 // Get dashboard statistics
 export const getDashboardStats = async (req, res) => {
   try {
-    const [totalIssues, pendingIssues, inProgressIssues, resolvedIssues] = await Promise.all([
-      prisma.issue.count(),
-      prisma.issue.count({ where: { status: "pending" } }),
-      prisma.issue.count({ where: { status: "in-progress" } }),
-      prisma.issue.count({ where: { status: "resolved" } }),
-    ]);
+    const [totalIssues, pendingIssues, inProgressIssues, resolvedIssues] =
+      await Promise.all([
+        prisma.issue.count(),
+        prisma.issue.count({ where: { status: "pending" } }),
+        prisma.issue.count({ where: { status: "in-progress" } }),
+        prisma.issue.count({ where: { status: "resolved" } }),
+      ]);
 
     // Get monthly statistics for the last 6 months
     const sixMonthsAgo = new Date();
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
     const monthlyStats = await prisma.issue.groupBy({
-      by: ['category'],
+      by: ["category"],
       where: {
         createdAt: {
           gte: sixMonthsAgo,
@@ -48,7 +51,7 @@ export const getDashboardStats = async (req, res) => {
 
     // Get category distribution
     const categoryStats = await prisma.issue.groupBy({
-      by: ['category'],
+      by: ["category"],
       _count: true,
     });
 
@@ -73,7 +76,7 @@ export const getRecentActivities = async (req, res) => {
     const recentIssues = await prisma.issue.findMany({
       take: 10,
       orderBy: {
-        createdAt: 'desc',
+        createdAt: "desc",
       },
       select: {
         id: true,
@@ -91,31 +94,118 @@ export const getRecentActivities = async (req, res) => {
   }
 };
 
-// Classification function
-export const classifyIssue = async (req, res) => {
+// Image classification function
+const classifyImage = async (imageUrl) => {
   try {
-    const { description } = req.body;
-    if (!description) {
-      return res.status(400).json({ error: "Description is required" });
-    }
-
-    // Perform zero-shot classification
     const response = await axios.post(
-      ZERO_SHOT_MODEL_URL,
-      {
-        inputs: description,
-        parameters: { candidate_labels: issueCategories },
-      },
+      IMAGE_MODEL_URL,
+      { inputs: imageUrl },
       { headers: { Authorization: `Bearer ${HF_API_KEY}` } }
     );
 
-    const { labels, scores } = response.data;
-    const category = labels[0];
-    const confidence = scores[0];
+    const predictions = response.data;
+    return predictions[0].label; // Get the highest confidence label
+  } catch (error) {
+    console.error("Error classifying image:", error);
+    return null;
+  }
+};
+
+// Helper function to determine priority based on category and confidence
+const determineAIPriority = (category, confidence) => {
+  const highPriorityIssues = [
+    "sewage overflow",
+    "water pipeline leakage",
+    "drainage leakage",
+  ];
+  const mediumPriorityIssues = [
+    "pothole",
+    "fused streetlight",
+    "broken sidewalk",
+  ];
+
+  if (highPriorityIssues.includes(category) && confidence > 0.7) {
+    return "high";
+  } else if (mediumPriorityIssues.includes(category) || confidence > 0.5) {
+    return "medium";
+  }
+  return "low";
+};
+
+// Classification function
+export const classifyIssue = async (req, res) => {
+  try {
+    const { description, imageUrl } = req.body;
+
+    // Check if at least one of description or imageUrl is provided
+    if (!description && !imageUrl) {
+      return res
+        .status(400)
+        .json({ error: "Either description or image URL is required" });
+    }
+
+    let textCategory = null;
+    let textConfidence = null;
+    let imageCategory = null;
+
+    // Classify text if description is provided
+    if (description) {
+      const textResponse = await axios.post(
+        ZERO_SHOT_MODEL_URL,
+        {
+          inputs: description,
+          parameters: { candidate_labels: issueCategories },
+        },
+        { headers: { Authorization: `Bearer ${HF_API_KEY}` } }
+      );
+      textCategory = textResponse.data.labels[0];
+      textConfidence = textResponse.data.scores[0];
+    }
+
+    // Classify image if imageUrl is provided
+    if (imageUrl) {
+      const imageResponse = await axios.post(
+        IMAGE_MODEL_URL,
+        { inputs: imageUrl },
+        { headers: { Authorization: `Bearer ${HF_API_KEY}` } }
+      );
+      imageCategory = imageResponse.data[0].label;
+    }
+
+    // Determine final category and confidence
+    let finalCategory;
+    let finalConfidence;
+
+    if (textCategory && imageCategory) {
+      // If both classifications are available, use text classification as primary
+      finalCategory = textCategory;
+      finalConfidence = textConfidence;
+    } else if (textCategory) {
+      finalCategory = textCategory;
+      finalConfidence = textConfidence;
+    } else {
+      finalCategory = imageCategory;
+      finalConfidence = 0.8; // Default confidence for image classification
+    }
+
+    // Determine AI priority
+    const aiPriority = determineAIPriority(finalCategory, finalConfidence);
 
     return res.json({
-      category,
-      confidence,
+      category: finalCategory,
+      confidence: finalConfidence,
+      aiPriority,
+      textAnalysis: textCategory
+        ? {
+            category: textCategory,
+            confidence: textConfidence,
+          }
+        : null,
+      imageAnalysis: imageCategory
+        ? {
+            category: imageCategory,
+          }
+        : null,
     });
   } catch (error) {
     console.error("Error classifying issue:", error);
@@ -152,7 +242,7 @@ export const getReportsByStatus = async (req, res) => {
         status: status,
       },
       orderBy: {
-        createdAt: 'desc',
+        createdAt: "desc",
       },
     });
     res.json(reports);
@@ -194,7 +284,7 @@ export const getReportByID = async (req, res) => {
 
 export const createReport = async (req, res) => {
   try {
-    const { description, location, category, imageUrl } = req.body;
+    const { description, location, category, imageUrl, priority } = req.body;
 
     if (!description || !location) {
       return res
@@ -202,8 +292,31 @@ export const createReport = async (req, res) => {
         .json({ error: "Description and location are required" });
     }
 
-    // If category is not provided, classify the description
-    const issueCategory = category || (await classifyDescription(description));
+    // If category is not provided, classify using both description and image
+    let issueCategory = category;
+    let aiPriority = null;
+
+    if (!category) {
+      // Get text-based classification
+      const textCategory = await classifyDescription(description);
+
+      // Get image-based classification if image URL is provided
+      let imageCategory = null;
+      if (imageUrl) {
+        imageCategory = await classifyImage(imageUrl);
+      }
+
+      // Use text category as default, but log both for reference
+      issueCategory = textCategory;
+
+      // Determine AI priority
+      aiPriority = determineAIPriority(textCategory, 0.8);
+      console.log("Classifications:", {
+        textCategory,
+        imageCategory,
+        aiPriority,
+      });
+    }
 
     const report = await prisma.issue.create({
       data: {
@@ -211,6 +324,8 @@ export const createReport = async (req, res) => {
         location,
         category: issueCategory,
         imageUrl: imageUrl || null,
+        priority: priority || "medium",
+        aiPriority: aiPriority,
         status: "pending",
       },
     });

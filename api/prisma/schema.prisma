@@ -14,6 +14,8 @@ model Issue {
   status      String   @default("pending") // pending, in-progress, resolved
   location    String?
   imageUrl    String?
+  priority    String   @default("medium") // high, medium, low
+  aiPriority  String?  // AI suggested priority
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
