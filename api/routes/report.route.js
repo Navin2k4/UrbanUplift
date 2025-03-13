@@ -13,12 +13,15 @@ import {
 
 const router = express.Router();
 
-router.get("/stats", getDashboardStats);
-router.get("/recent", getRecentActivities);
-router.get("/status/:status", getReportsByStatus);
+// User-specific dashboard routes
+router.get("/stats/:userId", getDashboardStats);
+router.get("/recent/:userId", getRecentActivities);
+router.get("/status/:status/:userId", getReportsByStatus);
 
+// Classification route
 router.post("/classify", classifyIssue);
 
+// General CRUD routes
 router.get("/", getReport);
 router.get("/:id", getReportByID);
 router.post("/", createReport);

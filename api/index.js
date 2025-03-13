@@ -9,25 +9,23 @@ import authRoutes from "./routes/auth.route.js";
 dotenv.config();
 
 mongoose
-    .connect(process.env.DATABASE_URL)
-    .then(() => {
-        console.log("MongoDb ON");
-    }).catch(err => {
-        console.log(err);
-    });
-    
+  .connect(process.env.DATABASE_URL)
+  .then(() => {
+    console.log("MongoDb ON");
+  })
+  .catch((err) => {
+    console.log(err);
+  });
+
 const __dirname = path.resolve();
 
 const app = express();
 
-app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:3000',
-  credentials: true // Important for cookies
-}));
+app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 
-app.use("/api/reports", reportRoutes);
+app.use("/api/report", reportRoutes);
 app.use("/api/auth", authRoutes);
 
 app.use(express.static(path.join(__dirname, "client", "dist")));
@@ -38,7 +36,7 @@ app.get("*", (req, res) => {
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ message: 'Something broke!', error: err.message });
+  res.status(500).json({ message: "Something broke!", error: err.message });
 });
 
 const port = process.env.PORT || 5000;

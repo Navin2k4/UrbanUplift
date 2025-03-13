@@ -1,5 +1,4 @@
 import React, { useState, useRef } from "react";
-import { useNavigate } from "react-router-dom"; // Add this import
 import { Card } from "primereact/card";
 import { InputText } from "primereact/inputtext";
 import { Password } from "primereact/password";
@@ -10,9 +9,9 @@ import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import { Toast } from "primereact/toast";
 import axios from "axios";
+import { useAuth } from "../../context/AuthContext";
 
 const GovernmentSignIn = () => {
-  const navigate = useNavigate(); // Add this line to initialize navigate
   const [formData, setFormData] = useState({
     employeeId: "",
     department: "",
@@ -22,6 +21,7 @@ const GovernmentSignIn = () => {
   const [loading, setLoading] = useState(false);
   const toast = useRef(null);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const departments = [
     { label: "Municipal Corporation", value: "municipal" },
@@ -35,33 +35,44 @@ const GovernmentSignIn = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post("/api/auth/government/login", {
-        ...formData,
-        role: "GOVT",
+      const response = await fetch("/api/auth/government/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+        credentials: "include",
       });
-      const { token, user } = response.data;
 
-      // Store token and user data
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Login failed");
+      }
 
       toast.current.show({
         severity: "success",
         summary: "Success",
-        detail: "Logged in successfully",
+        detail: "Login successful",
       });
 
-      navigate("/govt/dashboard");
+      // Call login from AuthContext with user data and handle navigation
+      await login({
+        ...data.user,
+        role: "GOVT",
+        department: formData.department, // Ensure department is passed to AuthContext
+      });
+
+      // Note: Navigation will be handled by AuthContext after login
     } catch (error) {
       toast.current.show({
         severity: "error",
         summary: "Error",
-        detail: error.response?.data?.message || "Failed to login",
+        detail: error.message || "Failed to login",
       });
     } finally {
       setLoading(false);
     }
-    navigate(`/dashboard/${formData.department}`);
   };
 
   return (

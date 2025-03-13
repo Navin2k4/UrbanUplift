@@ -1,5 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { PrimeReactProvider } from "primereact/api";
+import AuthProvider from "./context/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 // Layout Components
 import NavBar from "./components/NavBar";
@@ -31,46 +33,77 @@ import OfficialDashboard from "./pages/Dashboard/OfficialDashboard";
 
 function App() {
   return (
-    <PrimeReactProvider>
-      <Router>
-        <div className="flex flex-col min-h-screen">
-          <NavBar />
-          <main className="flex-grow">
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/about" element={<AboutPage />} />
-              <Route path="/contact" element={<ContactPage />} />
-              <Route path="/faq" element={<FAQPage />} />
-              <Route path="/how-it-works" element={<HowItWorksPage />} />
-              <Route path="/departments" element={<DepartmentsPage />} />
-              <Route path="/dept/:department" element={<DepartmentsPage />} />
-              <Route path="/success-stories" element={<SuccessStoriesPage />} />
-              <Route path="/privacy" element={<PrivacyPolicyPage />} />
-              <Route path="/terms" element={<TermsPage />} />
+    <Router>
+      <PrimeReactProvider>
+        <AuthProvider>
+          <div className="flex flex-col min-h-screen">
+            <NavBar />
+            <main className="flex-grow">
+              <Routes>
+                {/* Public Routes */}
+                <Route path="/" element={<HomePage />} />
+                <Route path="/about" element={<AboutPage />} />
+                <Route path="/contact" element={<ContactPage />} />
+                <Route path="/faq" element={<FAQPage />} />
+                <Route path="/how-it-works" element={<HowItWorksPage />} />
+                <Route path="/departments" element={<DepartmentsPage />} />
+                <Route path="/dept/:department" element={<DepartmentsPage />} />
+                <Route
+                  path="/success-stories"
+                  element={<SuccessStoriesPage />}
+                />
+                <Route path="/privacy" element={<PrivacyPolicyPage />} />
+                <Route path="/terms" element={<TermsPage />} />
 
-              {/* Auth Routes */}
-              <Route path="/signin/citizen" element={<CitizenSignIn />} />
-              <Route path="/signup/ngo" element={<NGOSignUp />} />
-              <Route path="/signup/government" element={<GovernmentSignUp />} />
-              <Route path="/signup/college" element={<CollegeSignUp />} />
-              <Route path="/signup/citizen" element={<CitizenSignUp />} />
-              <Route path="/dashboard/citizen" element={<CitizenDashBoard/>}/>
-              <Route path="/dashboard/ngo" element={<NGODasboard/>}/>
-              <Route path="/dashboard/citizen" element={<CitizenDashBoard />} />
-              <Route path="/dashboard/ngo" element={<NGODasboard />} />
-              <Route path="/signin/ngo" element={<NGOSignIn />} />
-              <Route
-                path="/dashboard/:department"
-                element={<OfficialDashboard />}
-              />
-              <Route path="/signin/government" element={<GovernmentSignIn />} />
-              <Route path="/signin/college" element={<CollegeSignIn />} />
-            </Routes>
-          </main>
-          <Footer />
-        </div>
-      </Router>
-    </PrimeReactProvider>
+                {/* Auth Routes */}
+                <Route path="/signin/citizen" element={<CitizenSignIn />} />
+                <Route path="/signin/ngo" element={<NGOSignIn />} />
+                <Route
+                  path="/signin/government"
+                  element={<GovernmentSignIn />}
+                />
+                <Route path="/signin/college" element={<CollegeSignIn />} />
+
+                <Route path="/signup/citizen" element={<CitizenSignUp />} />
+                <Route path="/signup/ngo" element={<NGOSignUp />} />
+                <Route
+                  path="/signup/government"
+                  element={<GovernmentSignUp />}
+                />
+                <Route path="/signup/college" element={<CollegeSignUp />} />
+
+                {/* Protected Routes */}
+                <Route
+                  path="/dashboard/citizen"
+                  element={
+                    <ProtectedRoute allowedRoles={["CITIZEN"]}>
+                      <CitizenDashBoard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/dashboard/ngo"
+                  element={
+                    <ProtectedRoute allowedRoles={["NGO"]}>
+                      <NGODasboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/dashboard/:department"
+                  element={
+                    <ProtectedRoute allowedRoles={["GOVT"]}>
+                      <OfficialDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+              </Routes>
+            </main>
+            <Footer />
+          </div>
+        </AuthProvider>
+      </PrimeReactProvider>
+    </Router>
   );
 }
 

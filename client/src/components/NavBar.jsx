@@ -1,32 +1,75 @@
 import React, { useState, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Menu } from "primereact/menu";
 import { Button } from "primereact/button";
+import { useAuth } from "../context/AuthContext";
 
 const NavBar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/");
+  };
 
   const signInItems = [
     {
       label: "Citizens",
       icon: "pi pi-user",
-      url: "/dashboard/citizen",
+      url: "/signin/citizen",
     },
     {
       label: "NGO's",
       icon: "pi pi-building",
-      url: "/dashboard/ngo",
+      url: "/signin/ngo",
     },
     {
       label: "Officials",
       icon: "pi pi-shield",
-      url: "/dashboard/officials",
+      url: "/signin/government",
     },
     {
       label: "Organizations",
       icon: "pi pi-book",
-      url: "/dashboard/college",
+      url: "/signin/college",
+    },
+  ];
+
+  const userMenuItems = [
+    {
+      label: "Dashboard",
+      icon: "pi pi-th-large",
+      command: () => {
+        switch (user?.role) {
+          case "CITIZEN":
+            navigate("/dashboard/citizen");
+            break;
+          case "NGO":
+            navigate("/dashboard/ngo");
+            break;
+          case "GOVT":
+            navigate(`/dashboard/${user.department}`);
+            break;
+          case "NSS":
+            navigate("/dashboard/college");
+            break;
+          default:
+            navigate("/");
+        }
+      },
+    },
+    {
+      label: "Profile",
+      icon: "pi pi-user",
+      command: () => navigate("/profile"),
+    },
+    {
+      label: "Sign Out",
+      icon: "pi pi-sign-out",
+      command: handleLogout,
     },
   ];
 
@@ -68,13 +111,28 @@ const NavBar = () => {
               Contact
             </Link>
             <div className="relative">
-              <Button
-                label="Sign In"
-                icon="pi pi-user"
-                onClick={(e) => menuRef.current.toggle(e)}
-                className="p-button-text text-gray-600 hover:text-green-600 transition-colors"
-              />
-              <Menu model={signInItems} popup ref={menuRef} />
+              {user ? (
+                <div className="flex items-center space-x-4">
+                  <span className="text-gray-600">Welcome, {user.name}</span>
+                  <Button
+                    label="Menu"
+                    icon="pi pi-user"
+                    onClick={(e) => menuRef.current.toggle(e)}
+                    className="p-button-text text-gray-600 hover:text-green-600 transition-colors"
+                  />
+                  <Menu model={userMenuItems} popup ref={menuRef} />
+                </div>
+              ) : (
+                <>
+                  <Button
+                    label="Sign In"
+                    icon="pi pi-user"
+                    onClick={(e) => menuRef.current.toggle(e)}
+                    className="p-button-text text-gray-600 hover:text-green-600 transition-colors"
+                  />
+                  <Menu model={signInItems} popup ref={menuRef} />
+                </>
+              )}
             </div>
           </div>
 
@@ -132,14 +190,50 @@ const NavBar = () => {
             >
               Contact
             </Link>
-            <div className="px-3 py-2">
-              <Button
-                label="Sign In"
-                icon="pi pi-user"
-                onClick={(e) => menuRef.current.toggle(e)}
-                className="p-button-text text-gray-600 hover:text-green-600 w-full justify-start"
-              />
-            </div>
+            {user ? (
+              <>
+                <div className="px-3 py-2 text-gray-600">
+                  Welcome, {user.name}
+                </div>
+                <button
+                  onClick={() => {
+                    switch (user.role) {
+                      case "CITIZEN":
+                        navigate("/dashboard/citizen");
+                        break;
+                      case "NGO":
+                        navigate("/dashboard/ngo");
+                        break;
+                      case "GOVT":
+                        navigate(`/dashboard/${user.department}`);
+                        break;
+                      case "NSS":
+                        navigate("/dashboard/college");
+                        break;
+                    }
+                    setIsOpen(false);
+                  }}
+                  className="block w-full text-left px-3 py-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-md"
+                >
+                  Dashboard
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="block w-full text-left px-3 py-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-md"
+                >
+                  Sign Out
+                </button>
+              </>
+            ) : (
+              <div className="px-3 py-2">
+                <Button
+                  label="Sign In"
+                  icon="pi pi-user"
+                  onClick={(e) => menuRef.current.toggle(e)}
+                  className="p-button-text text-gray-600 hover:text-green-600 w-full justify-start"
+                />
+              </div>
+            )}
           </div>
         </div>
       )}

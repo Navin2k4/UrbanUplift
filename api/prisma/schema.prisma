@@ -21,18 +21,17 @@ enum IssueStatus {
   RESOLVED
 }
 
-
 model Issue {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  id          String      @id @default(auto()) @map("_id") @db.ObjectId
   description String
   category    String
   status      IssueStatus @default(PENDING)
   location    String?
   imageUrl    String?
-  priority    String   @default("medium") // high, medium, low
-  aiPriority  String?  // AI suggested priority
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  priority    String      @default("medium") // high, medium, low
+  aiPriority  String?     // AI suggested priority
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 
   // Created by a citizen
   createdById String   @db.ObjectId
@@ -48,30 +47,62 @@ model Issue {
   assignedNssId  String? @db.ObjectId
   assignedNss    User?   @relation("NssAssignedIssues", fields: [assignedNssId], references: [id])
 
-  comments Comment[]
+  // Additional fields for tracking
+  department     String?  // For government department assignment
+  expectedResolution DateTime?
+  resolvedAt    DateTime?
+  resolutionNotes String?
+  
+  // Feedback and ratings
+  citizenFeedback String?
+  citizenRating   Int?    @default(0) // 1-5 rating
+  
+  // Location details
+  coordinates String? // Latitude, longitude
+  address     String?
+  district    String?
+  state       String?
+  pincode     String?
+
+  comments    Comment[]
+
   @@map("issue")
 }
 
 model User {
-  id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  email         String   @unique
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  email         String    @unique
   name          String
-  role          Role     @default(CITIZEN)
-  emailVerified Boolean  @default(false)
+  role          Role      @default(CITIZEN)
+  emailVerified Boolean   @default(false)
   image         String?
-  password      String?  // Hashed password for email auth
-  phoneNumber   String?  @unique
+  password      String?   // Hashed password for email auth
+  phoneNumber   String?   @unique
   address       String?
   bio           String?
-  isActive      Boolean  @default(true)
+  isActive      Boolean   @default(true)
   lastLoginAt   DateTime?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   // NGO specific fields
   organizationId      String?
   registrationNumber  String?
   description        String?
+  
+  // Government specific fields
+  employeeId   String?
+  department   String?
+  designation  String?
+  
+  // College specific fields
+  collegeId    String?
+  collegeRole  String?
+  
+  // Common fields for organizations
+  website      String?
+  socialMedia  Json?    // Store social media links
+  documents    Json?    // Store verification document links
 
   // Relations
   createdIssues          Issue[]  @relation("CreatedIssues")
@@ -79,8 +110,11 @@ model User {
   govtAssignedIssues     Issue[]  @relation("GovtAssignedIssues")
   nssAssignedIssues      Issue[]  @relation("NssAssignedIssues")
   comments               Comment[]
-  sessions               Session[]
-  resetTokens           PasswordReset[]
+
+  // Stats and metrics
+  issuesResolved Int     @default(0)
+  averageRating  Float   @default(0)
+  responseTime   Float   @default(0) // Average response time in hours
 
   @@map("user")
 }
@@ -94,47 +128,12 @@ model Comment {
   authorId  String   @db.ObjectId
   author    User     @relation(fields: [authorId], references: [id])
 
+  // Additional fields
+  attachments Json?  // Store attachment links
+  isEdited    Boolean @default(false)
+  editedAt    DateTime?
+
   @@map("comment")
 }
 
-model Session {
-  id        String   @id @map("_id")
-  expiresAt DateTime
-  token     String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  ipAddress String?
-  userAgent String?
-  userId    String   @db.ObjectId
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  isValid   Boolean  @default(true)
 
-  @@unique([token])
-  @@map("session")
-}
-
-model PasswordReset {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  token       String   @unique
-  userId      String   @db.ObjectId
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  expiresAt   DateTime
-  isUsed      Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@map("password_reset")
-}
-
-model Verification {
-  id         String    @id @map("_id")
-  identifier String    // email or phone
-  token      String    @unique
-  type       String    // email, phone
-  expiresAt  DateTime
-  isUsed     Boolean   @default(false)
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime? @updatedAt
-
-  @@map("verification")
-}

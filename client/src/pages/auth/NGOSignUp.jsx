@@ -40,44 +40,39 @@ const NGOSignUp = () => {
     }
 
     try {
-      const response = await fetch(
-        "http://localhost:3000/api/auth/ngo/register",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name: formData.organizationName,
-            organizationId: formData.organizationId,
-            registrationNumber: formData.registrationNumber,
-            description: formData.description,
-            email: formData.email,
-            password: formData.password,
-            phoneNumber: formData.phoneNumber,
-            address: formData.address,
-          }),
-        }
-      );
+      const response = await fetch("/api/auth/ngo/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.organizationName,
+          organizationId: formData.organizationId,
+          registrationNumber: formData.registrationNumber,
+          description: formData.description,
+          email: formData.email,
+          password: formData.password,
+          phoneNumber: formData.phoneNumber,
+          address: formData.address,
+          role: "NGO",
+        }),
+      });
 
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || "Registration failed");
       }
 
-      const data = await response.json();
-      const { token, user } = data;
-
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
-
       toast.current.show({
         severity: "success",
         summary: "Success",
-        detail: "Registration successful",
+        detail: "Registration successful! Please sign in to continue.",
       });
 
-      navigate("/ngo/dashboard");
+      // Redirect to sign in page after successful registration
+      setTimeout(() => {
+        navigate("/signin/ngo");
+      }, 1500);
     } catch (error) {
       toast.current.show({
         severity: "error",

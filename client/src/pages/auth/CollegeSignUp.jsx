@@ -57,45 +57,40 @@ const CollegeSignUp = () => {
     }
 
     try {
-      const response = await fetch(
-        "http://localhost:3000/api/auth/college/register",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            name: formData.name,
-            collegeId: formData.collegeId,
-            collegeName: formData.collegeName,
-            department: formData.department,
-            role: formData.role,
-            email: formData.email,
-            password: formData.password,
-            phoneNumber: formData.phoneNumber,
-            address: formData.address,
-          }),
-        }
-      );
+      const response = await fetch("/api/auth/college/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          collegeId: formData.collegeId,
+          collegeName: formData.collegeName,
+          department: formData.department,
+          role: "NSS",
+          collegeRole: formData.role,
+          email: formData.email,
+          password: formData.password,
+          phoneNumber: formData.phoneNumber,
+          address: formData.address,
+        }),
+      });
 
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || "Registration failed");
       }
 
-      const data = await response.json();
-      const { token, user } = data;
-
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
-
       toast.current.show({
         severity: "success",
         summary: "Success",
-        detail: "Registration successful",
+        detail: "Registration successful! Please sign in to continue.",
       });
 
-      navigate("/college/dashboard");
+      // Redirect to sign in page after successful registration
+      setTimeout(() => {
+        navigate("/signin/college");
+      }, 1500);
     } catch (error) {
       toast.current.show({
         severity: "error",

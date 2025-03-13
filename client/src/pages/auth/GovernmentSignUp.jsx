@@ -82,16 +82,15 @@ const GovernmentSignUp = () => {
       const data = await response.json();
       const { token, user } = data;
 
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
-
       toast.current.show({
         severity: "success",
         summary: "Success",
-        detail: "Registration successful",
+        detail: "Registration successful! Please sign in to continue.",
       });
 
-      navigate("/govt/dashboard");
+      setTimeout(() => {
+        navigate("/signin/government");
+      }, 1500);
     } catch (error) {
       toast.current.show({
         severity: "error",

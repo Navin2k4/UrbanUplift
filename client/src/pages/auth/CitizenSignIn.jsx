@@ -5,9 +5,9 @@ import { Password } from "primereact/password";
 import { Button } from "primereact/button";
 import { Divider } from "primereact/divider";
 import { motion } from "framer-motion";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Toast } from "primereact/toast";
-import Cookies from "js-cookie";
+import { useAuth } from "../../context/AuthContext";
 
 const CitizenSignIn = () => {
   const [formData, setFormData] = useState({
@@ -16,7 +16,7 @@ const CitizenSignIn = () => {
   });
   const [loading, setLoading] = useState(false);
   const toast = useRef(null);
-  const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -32,33 +32,14 @@ const CitizenSignIn = () => {
           email: formData.email,
           password: formData.password,
         }),
-        credentials: "include", // Important for cookies
+        credentials: "include",
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Login failed");
-      }
 
       const data = await response.json();
-      const { user, token } = data;
 
-      // Store token in cookie (expires in 7 days)
-      Cookies.set("token", token, {
-        expires: 7,
-        secure: true,
-        sameSite: "strict",
-      });
-
-      // Store user data in cookie (expires in 7 days)
-      Cookies.set("user", JSON.stringify(user), {
-        expires: 7,
-        secure: true,
-        sameSite: "strict",
-      });
-
-      // Also store in localStorage as backup
-      localStorage.setItem("user", JSON.stringify(user));
+      if (!response.ok) {
+        throw new Error(data.message || "Login failed");
+      }
 
       toast.current.show({
         severity: "success",
@@ -66,7 +47,8 @@ const CitizenSignIn = () => {
         detail: "Login successful",
       });
 
-      navigate("/dashboard/citizen");
+      // Call login from AuthContext with user data
+      login(data.user);
     } catch (error) {
       toast.current.show({
         severity: "error",

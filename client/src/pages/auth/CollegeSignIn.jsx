@@ -8,7 +8,7 @@ import { Divider } from "primereact/divider";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import { Toast } from "primereact/toast";
-import axios from "axios";
+import { useAuth } from "../../context/AuthContext";
 
 const CollegeSignIn = () => {
   const [formData, setFormData] = useState({
@@ -20,6 +20,7 @@ const CollegeSignIn = () => {
   const [loading, setLoading] = useState(false);
   const toast = useRef(null);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const roles = [
     { label: "College Administrator", value: "admin" },
@@ -33,28 +34,37 @@ const CollegeSignIn = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post("/api/auth/college/login", {
-        ...formData,
-        role: "NSS",
+      const response = await fetch("/api/auth/college/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...formData,
+          role: "NSS",
+        }),
+        credentials: "include",
       });
-      const { token, user } = response.data;
 
-      // Store token and user data
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Login failed");
+      }
 
       toast.current.show({
         severity: "success",
         summary: "Success",
-        detail: "Logged in successfully",
+        detail: "Login successful",
       });
 
-      navigate("/college/dashboard");
+      // Call login from AuthContext with user data
+      login(data.user);
     } catch (error) {
       toast.current.show({
         severity: "error",
         summary: "Error",
-        detail: error.response?.data?.message || "Failed to login",
+        detail: error.message || "Failed to login",
       });
     } finally {
       setLoading(false);

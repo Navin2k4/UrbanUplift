@@ -24,20 +24,55 @@ const issueCategories = [
 
 export const getDashboardStats = async (req, res) => {
   try {
-    const [totalIssues, pendingIssues, inProgressIssues, resolvedIssues] =
-      await Promise.all([
-        prisma.issue.count(),
-        prisma.issue.count({ where: { status: "pending" } }),
-        prisma.issue.count({ where: { status: "in-progress" } }),
-        prisma.issue.count({ where: { status: "resolved" } }),
-      ]);
+    const { userId } = req.params;
 
+    if (!userId) {
+      return res.status(400).json({
+        error: "User ID is required",
+      });
+    }
+
+    // Get total issues count
+    const totalIssues = await prisma.issue.count({
+      where: {
+        createdById: userId,
+      },
+    });
+
+    // Get status distribution
+    const statusDistribution = await prisma.issue.groupBy({
+      by: ["status"],
+      where: {
+        createdById: userId,
+      },
+      _count: true,
+    });
+
+    // Format status distribution
+    const formattedStatusDistribution = {
+      pending: 0,
+      inProgress: 0,
+      resolved: 0,
+    };
+
+    statusDistribution.forEach((item) => {
+      const status = item.status.toLowerCase();
+      const count = item._count;
+
+      if (status === "pending") formattedStatusDistribution.pending = count;
+      if (status === "in_progress")
+        formattedStatusDistribution.inProgress = count;
+      if (status === "resolved") formattedStatusDistribution.resolved = count;
+    });
+
+    // Get monthly stats for the last 6 months
     const sixMonthsAgo = new Date();
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
     const monthlyStats = await prisma.issue.groupBy({
       by: ["category"],
       where: {
+        createdById: userId,
         createdAt: {
           gte: sixMonthsAgo,
         },
@@ -45,30 +80,58 @@ export const getDashboardStats = async (req, res) => {
       _count: true,
     });
 
-  
+    // Get category distribution
     const categoryStats = await prisma.issue.groupBy({
       by: ["category"],
+      where: {
+        createdById: userId,
+      },
       _count: true,
     });
 
-    res.json({
+    return res.json({
       totalIssues,
-      statusDistribution: {
-        pending: pendingIssues,
-        inProgress: inProgressIssues,
-        resolved: resolvedIssues,
-      },
-      monthlyStats,
-      categoryStats,
+      statusDistribution: formattedStatusDistribution,
+      monthlyStats: monthlyStats.map((stat) => ({
+        category: stat.category,
+        _count: stat._count,
+      })),
+      categoryStats: categoryStats.map((stat) => ({
+        category: stat.category,
+        _count: stat._count,
+      })),
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Error fetching dashboard stats:", error);
+    return res.status(500).json({
+      error: "Failed to fetch dashboard statistics",
+      details: error.message,
+    });
   }
 };
 
 export const getRecentActivities = async (req, res) => {
   try {
+    const userId = req.params.userId;
+
+    // Validate if userId exists
+    if (!userId) {
+      return res.status(400).json({ error: "User ID is required" });
+    }
+
+    // Check if user exists
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
     const recentIssues = await prisma.issue.findMany({
+      where: {
+        createdById: userId,
+      },
       take: 10,
       orderBy: {
         createdAt: "desc",
@@ -85,7 +148,11 @@ export const getRecentActivities = async (req, res) => {
 
     res.json(recentIssues);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Error in getRecentActivities:", error);
+    res.status(500).json({
+      error: "Failed to fetch recent activities",
+      details: error.message,
+    });
   }
 };
 
@@ -171,7 +238,7 @@ export const classifyIssue = async (req, res) => {
       finalConfidence = textConfidence;
     } else {
       finalCategory = imageCategory;
-      finalConfidence = 0.8; 
+      finalConfidence = 0.8;
     }
 
     // Determine AI priority
@@ -222,18 +289,49 @@ const classifyDescription = async (description) => {
 // Get reports by status
 export const getReportsByStatus = async (req, res) => {
   try {
-    const { status } = req.params;
+    const { status, userId } = req.params;
+
+    if (!userId) {
+      return res.status(400).json({
+        error: "User ID is required",
+      });
+    }
+
+    // Validate status and convert to uppercase
+    const validStatuses = ["PENDING", "IN_PROGRESS", "RESOLVED"];
+    const normalizedStatus = status.toUpperCase();
+
+    if (!validStatuses.includes(normalizedStatus)) {
+      return res.status(400).json({
+        error: `Invalid status. Must be one of: ${validStatuses.join(", ")}`,
+      });
+    }
+
     const reports = await prisma.issue.findMany({
       where: {
-        status: status,
+        status: normalizedStatus,
+        createdById: userId,
       },
       orderBy: {
         createdAt: "desc",
       },
+      include: {
+        createdBy: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
+      },
     });
-    res.json(reports);
+
+    return res.json(reports);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Error fetching reports by status:", error);
+    return res.status(500).json({
+      error: "Failed to fetch reports",
+      details: error.message,
+    });
   }
 };
 
@@ -270,12 +368,13 @@ export const getReportByID = async (req, res) => {
 
 export const createReport = async (req, res) => {
   try {
-    const { description, location, category, imageUrl, priority } = req.body;
+    const { description, location, category, imageUrl, priority, createdById } =
+      req.body;
 
-    if (!description || !location) {
+    if (!description || !location || !createdById) {
       return res
         .status(400)
-        .json({ error: "Description and location are required" });
+        .json({ error: "Description, location, and createdById are required" });
     }
 
     // If category is not provided, classify using both description and image
@@ -312,13 +411,18 @@ export const createReport = async (req, res) => {
         imageUrl: imageUrl || null,
         priority: priority || "medium",
         aiPriority: aiPriority,
-        status: "pending",
+        status: "PENDING",
+        createdById,
       },
     });
 
     res.status(201).json(report);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Error creating report:", error);
+    res.status(500).json({
+      error: "Failed to create report",
+      details: error.message,
+    });
   }
 };
 

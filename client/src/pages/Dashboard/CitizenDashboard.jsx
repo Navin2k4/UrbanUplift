@@ -65,6 +65,7 @@ import { motion } from "framer-motion";
 import axios from "axios";
 import { useDropzone } from "react-dropzone";
 import CloudinaryUpload from "../../components/CloudinaryUpload";
+import { useAuth } from "../../context/AuthContext";
 
 const serviceRequestData = [
   { month: "Jan", requests: 65 },
@@ -138,29 +139,29 @@ const scaleIn = {
 
 // Styled Components
 const DashboardCard = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(2),
+  padding: theme.spacing(3),
   height: "100%",
   display: "flex",
   flexDirection: "column",
-  borderRadius: "10px",
-  boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+  borderRadius: "16px",
+  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.05)",
   background: "white",
   transition: "all 0.3s ease",
   "&:hover": {
-    boxShadow: "0 8px 12px rgba(0, 0, 0, 0.15)",
-    transform: "translateY(-2px)",
+    boxShadow: "0 8px 25px rgba(0, 0, 0, 0.1)",
+    transform: "translateY(-4px)",
   },
 }));
 
 const StatsCard = styled(Card)(({ theme }) => ({
   height: "100%",
-  background: "linear-gradient(45deg, #22c55e 30%, #16a34a 90%)",
+  background: "linear-gradient(135deg, #22c55e 0%, #16a34a 100%)",
   color: "white",
-  borderRadius: "10px",
+  borderRadius: "16px",
   transition: "all 0.3s ease",
   "&:hover": {
-    transform: "translateY(-2px)",
-    boxShadow: "0 8px 12px rgba(0, 0, 0, 0.15)",
+    transform: "translateY(-4px)",
+    boxShadow: "0 12px 20px rgba(34, 197, 94, 0.2)",
   },
 }));
 
@@ -183,7 +184,19 @@ function TabPanel(props) {
 
 // Add this component for issue cards
 const IssueCard = ({ issue }) => (
-  <Card sx={{ mb: 2, position: "relative" }}>
+  <Card
+    sx={{
+      mb: 2,
+      position: "relative",
+      borderRadius: "12px",
+      overflow: "hidden",
+      transition: "all 0.3s ease",
+      "&:hover": {
+        transform: "translateY(-4px)",
+        boxShadow: "0 8px 25px rgba(0, 0, 0, 0.1)",
+      },
+    }}
+  >
     <Box sx={{ position: "relative" }}>
       {issue.imageUrl ? (
         <img
@@ -200,7 +213,7 @@ const IssueCard = ({ issue }) => (
           sx={{
             width: "100%",
             height: "200px",
-            bgcolor: "grey.200",
+            bgcolor: "grey.100",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -212,8 +225,8 @@ const IssueCard = ({ issue }) => (
       <Box
         sx={{
           position: "absolute",
-          top: 10,
-          right: 10,
+          top: 16,
+          right: 16,
           display: "flex",
           gap: 1,
         }}
@@ -221,13 +234,17 @@ const IssueCard = ({ issue }) => (
         <Chip
           label={issue.status}
           color={
-            issue.status === "resolved"
+            issue.status === "RESOLVED"
               ? "success"
-              : issue.status === "in-progress"
+              : issue.status === "IN_PROGRESS"
               ? "warning"
               : "error"
           }
-          sx={{ textTransform: "capitalize" }}
+          sx={{
+            textTransform: "capitalize",
+            fontWeight: "bold",
+            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+          }}
         />
         <Chip
           label={issue.priority || "medium"}
@@ -238,28 +255,39 @@ const IssueCard = ({ issue }) => (
               ? "warning"
               : "success"
           }
-          sx={{ textTransform: "capitalize" }}
+          sx={{
+            textTransform: "capitalize",
+            fontWeight: "bold",
+            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+          }}
         />
       </Box>
     </Box>
-    <CardContent>
-      <Typography variant="h6" gutterBottom>
+    <CardContent sx={{ p: 3 }}>
+      <Typography variant="h6" gutterBottom sx={{ fontWeight: "bold" }}>
         {issue.category}
       </Typography>
-      <Typography variant="body2" color="text.secondary" paragraph>
+      <Typography
+        variant="body2"
+        color="text.secondary"
+        paragraph
+        sx={{ mb: 2, lineHeight: 1.6 }}
+      >
         {issue.description}
       </Typography>
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 2 }}>
-        <LocationOn color="action" fontSize="small" />
-        <Typography variant="body2" color="text.secondary">
-          {issue.location}
-        </Typography>
-      </Box>
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 1 }}>
-        <AccessTime color="action" fontSize="small" />
-        <Typography variant="body2" color="text.secondary">
-          {new Date(issue.createdAt).toLocaleDateString()}
-        </Typography>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 3, mt: 2 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <LocationOn color="primary" fontSize="small" />
+          <Typography variant="body2" color="text.secondary">
+            {issue.location}
+          </Typography>
+        </Box>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <AccessTime color="primary" fontSize="small" />
+          <Typography variant="body2" color="text.secondary">
+            {new Date(issue.createdAt).toLocaleDateString()}
+          </Typography>
+        </Box>
       </Box>
     </CardContent>
   </Card>
@@ -275,14 +303,38 @@ const RecentActivitiesSection = ({ activities }) => (
       transition={{ delay: 0.4 }}
     >
       <DashboardCard>
-        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
-          <Typography variant="h6" sx={{ color: "#22c55e" }}>
-            Recent Activities
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 4,
+          }}
+        >
+          <Typography
+            variant="h5"
+            sx={{
+              color: "#22c55e",
+              fontWeight: "bold",
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+            }}
+          >
+            <Assessment /> Recent Activities
           </Typography>
           <Button
             startIcon={<Refresh />}
             onClick={() => fetchDashboardData()}
-            sx={{ color: "#22c55e" }}
+            sx={{
+              color: "white",
+              bgcolor: "#22c55e",
+              "&:hover": {
+                bgcolor: "#16a34a",
+              },
+              borderRadius: "8px",
+              px: 3,
+            }}
           >
             Refresh
           </Button>
@@ -299,7 +351,7 @@ const RecentActivitiesSection = ({ activities }) => (
   </Grid>
 );
 
-// Update the My Issues Tab
+// Update the MyIssuesTab component
 const MyIssuesTab = ({ issues }) => (
   <Grid container spacing={3}>
     {Object.entries(issues).map(([status, statusIssues]) => (
@@ -311,15 +363,31 @@ const MyIssuesTab = ({ issues }) => (
             sx={{ color: "#22c55e", mb: 3 }}
           >
             {status.charAt(0).toUpperCase() + status.slice(1)} Issues (
-            {statusIssues.length})
+            {Array.isArray(statusIssues) ? statusIssues.length : 0})
           </Typography>
-          <Grid container spacing={3}>
-            {statusIssues.map((issue) => (
-              <Grid item xs={12} md={6} lg={4} key={issue.id}>
-                <IssueCard issue={issue} />
-              </Grid>
-            ))}
-          </Grid>
+          {Array.isArray(statusIssues) && statusIssues.length > 0 ? (
+            <Grid container spacing={3}>
+              {statusIssues.map((issue) => (
+                <Grid item xs={12} md={6} lg={4} key={issue.id}>
+                  <IssueCard issue={issue} />
+                </Grid>
+              ))}
+            </Grid>
+          ) : (
+            <Box
+              sx={{
+                textAlign: "center",
+                py: 4,
+                bgcolor: "grey.50",
+                borderRadius: 2,
+              }}
+            >
+              <Construction sx={{ fontSize: 48, color: "grey.400", mb: 2 }} />
+              <Typography color="text.secondary">
+                No {status.toLowerCase()} issues found
+              </Typography>
+            </Box>
+          )}
         </DashboardCard>
       </Grid>
     ))}
@@ -422,6 +490,7 @@ const getPlaceFromCoordinates = async (latitude, longitude) => {
 };
 
 const CitizenDashBoard = () => {
+  const { user } = useAuth();
   const [tabValue, setTabValue] = useState(0);
   const [imageUrl, setImageUrl] = useState("");
   const [loading, setLoading] = useState(false);
@@ -473,16 +542,41 @@ const CitizenDashBoard = () => {
     }
   }, []);
 
-  // Fetch dashboard data
+  // Fetch dashboard data with user ID
   const fetchDashboardData = async () => {
     try {
+      if (!user || !user.id) {
+        setAlert({
+          show: true,
+          message: "User information not available",
+          severity: "error",
+        });
+        return;
+      }
+
       const [statsResponse, recentResponse] = await Promise.all([
-        fetch("/api/reports/stats"),
-        fetch("/api/reports/recent"),
+        fetch(`/api/report/stats/${user.id}`, {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        }),
+        fetch(`/api/report/recent/${user.id}`, {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+        }),
       ]);
 
       if (!statsResponse.ok || !recentResponse.ok) {
-        throw new Error("Failed to fetch dashboard data");
+        const statsError = await statsResponse.json().catch(() => ({}));
+        const recentError = await recentResponse.json().catch(() => ({}));
+        throw new Error(
+          statsError.error ||
+            recentError.error ||
+            "Failed to fetch dashboard data"
+        );
       }
 
       const stats = await statsResponse.json();
@@ -494,20 +588,85 @@ const CitizenDashBoard = () => {
       console.error("Error fetching dashboard data:", error);
       setAlert({
         show: true,
-        message: "Error loading dashboard data",
+        message: error.message || "Error loading dashboard data",
         severity: "error",
       });
     }
   };
 
-  // Fetch issues by status
+  // Fetch issues by status with user ID
   const fetchIssuesByStatus = async () => {
     try {
+      if (!user || !user.id) {
+        setAlert({
+          show: true,
+          message: "User information not available",
+          severity: "error",
+        });
+        return;
+      }
+
+      // Helper function to format status for API
+      const formatStatusForApi = (status) => {
+        switch (status.toLowerCase()) {
+          case "pending":
+            return "PENDING";
+          case "in_progress":
+          case "inprogress":
+            return "IN_PROGRESS";
+          case "resolved":
+            return "RESOLVED";
+          default:
+            return status.toUpperCase();
+        }
+      };
+
       const [pendingRes, inProgressRes, resolvedRes] = await Promise.all([
-        fetch("/api/reports/status/pending"),
-        fetch("/api/reports/status/in-progress"),
-        fetch("/api/reports/status/resolved"),
+        fetch(
+          `/api/report/status/${formatStatusForApi("pending")}/${user.id}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+            credentials: "include",
+          }
+        ),
+        fetch(
+          `/api/report/status/${formatStatusForApi("in_progress")}/${user.id}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+            credentials: "include",
+          }
+        ),
+        fetch(
+          `/api/report/status/${formatStatusForApi("resolved")}/${user.id}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+            credentials: "include",
+          }
+        ),
       ]);
+
+      // Check for non-200 responses and handle them
+      const responses = [
+        { res: pendingRes, status: "pending" },
+        { res: inProgressRes, status: "in_progress" },
+        { res: resolvedRes, status: "resolved" },
+      ];
+
+      for (const { res, status } of responses) {
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({}));
+          console.error(`Error fetching ${status} issues:`, errorData);
+          throw new Error(
+            errorData.error || `Failed to fetch ${status} issues`
+          );
+        }
+      }
 
       const [pending, inProgress, resolved] = await Promise.all([
         pendingRes.json(),
@@ -516,16 +675,22 @@ const CitizenDashBoard = () => {
       ]);
 
       setMyIssues({
-        pending,
-        inProgress,
-        resolved,
+        pending: pending || [],
+        inProgress: inProgress || [],
+        resolved: resolved || [],
       });
     } catch (error) {
       console.error("Error fetching issues:", error);
       setAlert({
         show: true,
-        message: "Error loading issues",
+        message: error.message || "Error loading issues",
         severity: "error",
+      });
+      // Set empty arrays as fallback
+      setMyIssues({
+        pending: [],
+        inProgress: [],
+        resolved: [],
       });
     }
   };
@@ -539,6 +704,13 @@ const CitizenDashBoard = () => {
     }
   }, [tabValue]);
 
+  // Add this effect to fetch location when tab changes to Post Issue
+  useEffect(() => {
+    if (tabValue === 1) {
+      handleLocationClick();
+    }
+  }, [tabValue]);
+
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
   };
@@ -546,7 +718,7 @@ const CitizenDashBoard = () => {
   const handleImageUpload = async (url) => {
     setImageUrl(url);
     try {
-      const response = await fetch("/api/reports/classify", {
+      const response = await fetch("/api/report/classify", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -668,9 +840,10 @@ const CitizenDashBoard = () => {
         category: issueAnalysis?.category || "other",
         imageUrl,
         priority: selectedPriority,
+        createdById: user.id,
       };
 
-      const response = await fetch("/api/reports", {
+      const response = await fetch("/api/report", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -696,6 +869,9 @@ const CitizenDashBoard = () => {
         setLocation("");
         setIssueAnalysis(null);
         setSelectedPriority("medium");
+
+        // Refresh dashboard data after submitting new issue
+        fetchDashboardData();
       }
     } catch (error) {
       console.error("Error submitting issue:", error);
@@ -747,6 +923,64 @@ const CitizenDashBoard = () => {
       value: stat._count,
     })) || [];
 
+  // Update Profile section to show current user data
+  const ProfileSection = () => (
+    <DashboardCard>
+      <Typography variant="h6" gutterBottom sx={{ color: "#22c55e" }}>
+        Profile Settings
+      </Typography>
+      <Grid container spacing={3}>
+        <Grid item xs={12} md={6}>
+          <TextField
+            fullWidth
+            label="Full Name"
+            variant="outlined"
+            value={user.name || ""}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            fullWidth
+            label="Email"
+            variant="outlined"
+            value={user.email || ""}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            fullWidth
+            label="Phone"
+            variant="outlined"
+            value={user.phoneNumber || ""}
+            sx={{ mb: 2 }}
+          />
+          <Button
+            variant="contained"
+            sx={{
+              bgcolor: "#22c55e",
+              "&:hover": { bgcolor: "#16a34a" },
+            }}
+          >
+            Update Profile
+          </Button>
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <Typography variant="h6" gutterBottom>
+            Activity History
+          </Typography>
+          <List>
+            {recentActivities.map((activity) => (
+              <ListItem key={activity.id}>
+                <ListItemText
+                  primary={activity.category}
+                  secondary={new Date(activity.createdAt).toLocaleDateString()}
+                />
+              </ListItem>
+            ))}
+          </List>
+        </Grid>
+      </Grid>
+    </DashboardCard>
+  );
+
   return (
     <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
       <motion.div
@@ -754,47 +988,45 @@ const CitizenDashBoard = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
       >
-        <Typography
-          variant="h4"
-          gutterBottom
-          component="h1"
+        <Box
           sx={{
-            mb: 2,
-            fontWeight: "bold",
-            background: "linear-gradient(45deg, #22c55e 30%, #16a34a 90%)",
-            backgroundClip: "text",
-            textFillColor: "transparent",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
+            borderRadius: "16px",
+            bgcolor: "background.paper",
+            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.05)",
+            mb: 4,
+            overflow: "hidden",
           }}
         >
-          Citizen Dashboard
-        </Typography>
-
-        <Typography
-          variant="h6"
-          gutterBottom
-          sx={{ mb: 4, color: "#666", fontStyle: "italic" }}
-        >
-          Empowering Communities, One Solution at a Time
-        </Typography>
-
-        <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 3 }}>
           <Tabs
             value={tabValue}
             onChange={handleTabChange}
             variant="scrollable"
             scrollButtons="auto"
             sx={{
+              borderBottom: 1,
+              borderColor: "divider",
               "& .Mui-selected": {
                 color: "#22c55e !important",
               },
               "& .MuiTabs-indicator": {
                 backgroundColor: "#22c55e",
+                height: "3px",
+              },
+              "& .MuiTab-root": {
+                minHeight: "64px",
+                fontSize: "1rem",
               },
             }}
           >
-            <Tab icon={<Assignment />} label="Dashboard" />
+            <Tab
+              icon={<Assignment />}
+              label="Dashboard"
+              sx={{
+                textTransform: "none",
+                fontWeight: "medium",
+                fontSize: "1rem",
+              }}
+            />
             <Tab icon={<Campaign />} label="Post an Issue" />
             <Tab icon={<Construction />} label="My Issues" />
             <Tab icon={<Feedback />} label="Feedback" />
@@ -927,27 +1159,29 @@ const CitizenDashBoard = () => {
 
         {/* Post an Issue Tab */}
         <TabPanel value={tabValue} index={1}>
-          <DashboardCard>
-            <Typography variant="h6" gutterBottom sx={{ color: "#22c55e" }}>
-              Post a New Issue
-            </Typography>
+          <Grid container spacing={3}>
+            {/* Left Column */}
+            <Grid item xs={12} md={6}>
+              <DashboardCard>
+                <Typography
+                  variant="h6"
+                  gutterBottom
+                  sx={{ color: "#22c55e", mb: 3 }}
+                >
+                  Upload Image
+                </Typography>
 
-            <Collapse in={alert.show}>
-              <Alert
-                severity={alert.severity}
-                onClose={() => setAlert({ ...alert, show: false })}
-                sx={{ mb: 2 }}
-              >
-                {alert.message}
-              </Alert>
-            </Collapse>
+                <Collapse in={alert.show}>
+                  <Alert
+                    severity={alert.severity}
+                    onClose={() => setAlert({ ...alert, show: false })}
+                    sx={{ mb: 2 }}
+                  >
+                    {alert.message}
+                  </Alert>
+                </Collapse>
 
-            <Grid container spacing={3}>
-              <Grid item xs={12}>
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant="subtitle1" gutterBottom>
-                    Upload Image
-                  </Typography>
+                <Box sx={{ mb: 4 }}>
                   <CloudinaryUpload onImageUpload={handleImageUpload} />
                 </Box>
 
@@ -960,171 +1194,258 @@ const CitizenDashBoard = () => {
                 )}
 
                 {issueAnalysis && (
-                  <Box sx={{ mt: 2, mb: 2 }}>
-                    <Typography variant="subtitle1" gutterBottom>
-                      AI Analysis Results:
+                  <Paper
+                    elevation={2}
+                    sx={{ p: 2, mt: 2, bgcolor: "background.default" }}
+                  >
+                    <Typography
+                      variant="subtitle1"
+                      gutterBottom
+                      sx={{ color: "#22c55e", fontWeight: "medium" }}
+                    >
+                      AI Analysis Results
                     </Typography>
                     <Box
-                      sx={{
-                        display: "flex",
-                        gap: 1,
-                        flexWrap: "wrap",
-                        alignItems: "center",
-                      }}
+                      sx={{ display: "flex", flexDirection: "column", gap: 1 }}
                     >
                       <Chip
                         label={`Category: ${issueAnalysis.category}`}
                         color="primary"
-                        sx={{ bgcolor: "#22c55e" }}
+                        sx={{ bgcolor: "#22c55e", maxWidth: "fit-content" }}
                       />
-                      <Chip
-                        label={`Confidence: ${Math.round(
-                          issueAnalysis.confidence * 100
-                        )}%`}
-                        color="primary"
-                        variant="outlined"
-                      />
-                      <Alert
-                        severity={
-                          issueAnalysis.severity === "HIGH"
-                            ? "error"
-                            : issueAnalysis.severity === "MEDIUM"
-                            ? "warning"
-                            : "info"
-                        }
-                        sx={{ ml: 1 }}
-                      >
-                        Priority Level: {issueAnalysis.severity}
-                      </Alert>
-                    </Box>
-                  </Box>
-                )}
-              </Grid>
-
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  multiline
-                  rows={4}
-                  label="Describe the Problem"
-                  variant="outlined"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  helperText="AI will analyze your description to classify the issue"
-                />
-              </Grid>
-
-              <Grid item xs={12}>
-                <TextField
-                  id="location-input"
-                  fullWidth
-                  label="Location"
-                  variant="outlined"
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  placeholder="Search for a location or use current location"
-                  InputProps={{
-                    endAdornment: (
                       <Box
                         sx={{ display: "flex", gap: 1, alignItems: "center" }}
                       >
-                        <LocationOn color="action" />
-                        <Button size="small" onClick={handleLocationClick}>
-                          Use Current Location
-                        </Button>
+                        <Chip
+                          label={`Confidence: ${Math.round(
+                            issueAnalysis.confidence * 100
+                          )}%`}
+                          color="primary"
+                          variant="outlined"
+                        />
+                        <Alert
+                          severity={
+                            issueAnalysis.severity === "HIGH"
+                              ? "error"
+                              : issueAnalysis.severity === "MEDIUM"
+                              ? "warning"
+                              : "info"
+                          }
+                          sx={{ flexGrow: 1 }}
+                        >
+                          Priority Level: {issueAnalysis.severity}
+                        </Alert>
                       </Box>
-                    ),
-                  }}
-                />
-                {locationDetails && (
-                  <Box
-                    sx={{ mt: 1, p: 1, bgcolor: "grey.50", borderRadius: 1 }}
-                  >
-                    {locationDetails.raw && (
-                      <>
-                        {locationDetails.raw.locality && (
-                          <Typography variant="body2" color="text.secondary">
-                            City: {locationDetails.raw.locality}
-                          </Typography>
-                        )}
-                        {locationDetails.raw.neighborhood && (
-                          <Typography variant="body2" color="text.secondary">
-                            Neighborhood: {locationDetails.raw.neighborhood}
-                          </Typography>
-                        )}
-                        {locationDetails.raw.administrative_area_level_1 && (
-                          <Typography variant="body2" color="text.secondary">
-                            State/Region:{" "}
-                            {locationDetails.raw.administrative_area_level_1}
-                          </Typography>
-                        )}
-                      </>
-                    )}
-                    <Typography variant="body2" color="text.secondary">
-                      Full Address: {locationDetails.formattedAddress}
-                    </Typography>
-                  </Box>
+                    </Box>
+                  </Paper>
                 )}
-              </Grid>
+              </DashboardCard>
+            </Grid>
 
-              <Grid item xs={12}>
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant="subtitle1" gutterBottom>
-                    Priority Level{" "}
-                    {issueAnalysis &&
-                      `(AI Suggested: ${issueAnalysis.severity})`}
-                  </Typography>
-                  <Box sx={{ display: "flex", gap: 1 }}>
-                    {["low", "medium", "high"].map((priority) => (
-                      <Button
-                        key={priority}
-                        variant={
-                          selectedPriority === priority
-                            ? "contained"
-                            : "outlined"
-                        }
-                        onClick={() => setSelectedPriority(priority)}
+            {/* Right Column */}
+            <Grid item xs={12} md={6}>
+              <DashboardCard>
+                <Typography
+                  variant="h6"
+                  gutterBottom
+                  sx={{ color: "#22c55e", mb: 3 }}
+                >
+                  Issue Details
+                </Typography>
+
+                <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                  {/* Description Field */}
+                  <TextField
+                    fullWidth
+                    multiline
+                    rows={4}
+                    label="Describe the Problem"
+                    variant="outlined"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    helperText="AI will analyze your description to classify the issue"
+                  />
+
+                  {/* Location Field */}
+                  <Box>
+                    <TextField
+                      id="location-input"
+                      fullWidth
+                      label="Location"
+                      variant="outlined"
+                      value={location}
+                      onChange={(e) => setLocation(e.target.value)}
+                      placeholder="Search for a location or use current location"
+                      InputProps={{
+                        endAdornment: (
+                          <Box
+                            sx={{
+                              display: "flex",
+                              gap: 1,
+                              alignItems: "center",
+                            }}
+                          >
+                            {locationDetails ? (
+                              <Chip
+                                icon={<LocationOn />}
+                                label="Location Set"
+                                color="success"
+                                onDelete={() => {
+                                  setLocation("");
+                                  setLocationDetails(null);
+                                }}
+                              />
+                            ) : (
+                              <Button
+                                size="small"
+                                onClick={handleLocationClick}
+                                startIcon={<LocationOn />}
+                                disabled={loading}
+                              >
+                                {loading
+                                  ? "Getting Location..."
+                                  : "Use Current Location"}
+                              </Button>
+                            )}
+                          </Box>
+                        ),
+                      }}
+                    />
+
+                    {locationDetails && (
+                      <Paper
+                        elevation={1}
                         sx={{
-                          bgcolor:
-                            selectedPriority === priority
-                              ? priority === "high"
-                                ? "#ef4444"
-                                : priority === "medium"
-                                ? "#f97316"
-                                : "#22c55e"
-                              : "transparent",
-                          "&:hover": {
-                            bgcolor:
-                              priority === "high"
-                                ? "#dc2626"
-                                : priority === "medium"
-                                ? "#ea580c"
-                                : "#16a34a",
-                          },
+                          mt: 2,
+                          p: 2,
+                          bgcolor: "background.default",
+                          borderRadius: 1,
+                          border: "1px solid",
+                          borderColor: "divider",
                         }}
                       >
-                        {priority.toUpperCase()}
-                      </Button>
-                    ))}
+                        <Grid container spacing={2}>
+                          {locationDetails.raw?.locality && (
+                            <Grid item xs={12} sm={6}>
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                              >
+                                City: {locationDetails.raw.locality}
+                              </Typography>
+                            </Grid>
+                          )}
+                          {locationDetails.raw?.neighborhood && (
+                            <Grid item xs={12} sm={6}>
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                              >
+                                Area: {locationDetails.raw.neighborhood}
+                              </Typography>
+                            </Grid>
+                          )}
+                          {locationDetails.raw?.administrative_area_level_1 && (
+                            <Grid item xs={12} sm={6}>
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                              >
+                                State:{" "}
+                                {
+                                  locationDetails.raw
+                                    .administrative_area_level_1
+                                }
+                              </Typography>
+                            </Grid>
+                          )}
+                          {locationDetails.coordinates && (
+                            <Grid item xs={12} sm={6}>
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                              >
+                                Coordinates: {locationDetails.coordinates}
+                              </Typography>
+                            </Grid>
+                          )}
+                        </Grid>
+                      </Paper>
+                    )}
                   </Box>
-                </Box>
-              </Grid>
 
-              <Grid item xs={12}>
-                <Button
-                  variant="contained"
-                  disabled={loading || !imageUrl || !description || !location}
-                  onClick={handleSubmit}
-                  sx={{
-                    bgcolor: "#22c55e",
-                    "&:hover": { bgcolor: "#16a34a" },
-                  }}
-                >
-                  {loading ? <CircularProgress size={24} /> : "Submit Issue"}
-                </Button>
-              </Grid>
+                  {/* Priority Selection */}
+                  <Box>
+                    <Typography variant="subtitle1" gutterBottom>
+                      Priority Level{" "}
+                      {issueAnalysis &&
+                        `(AI Suggested: ${issueAnalysis.severity})`}
+                    </Typography>
+                    <Box sx={{ display: "flex", gap: 1 }}>
+                      {["low", "medium", "high"].map((priority) => (
+                        <Button
+                          key={priority}
+                          variant={
+                            selectedPriority === priority
+                              ? "contained"
+                              : "outlined"
+                          }
+                          onClick={() => setSelectedPriority(priority)}
+                          sx={{
+                            flex: 1,
+                            bgcolor:
+                              selectedPriority === priority
+                                ? priority === "high"
+                                  ? "#ef4444"
+                                  : priority === "medium"
+                                  ? "#f97316"
+                                  : "#22c55e"
+                                : "transparent",
+                            "&:hover": {
+                              bgcolor:
+                                priority === "high"
+                                  ? "#dc2626"
+                                  : priority === "medium"
+                                  ? "#ea580c"
+                                  : "#16a34a",
+                            },
+                          }}
+                        >
+                          {priority.toUpperCase()}
+                        </Button>
+                      ))}
+                    </Box>
+                  </Box>
+
+                  {/* Submit Button */}
+                  <Button
+                    variant="contained"
+                    fullWidth
+                    size="large"
+                    disabled={loading || !imageUrl || !description || !location}
+                    onClick={handleSubmit}
+                    sx={{
+                      bgcolor: "#22c55e",
+                      "&:hover": { bgcolor: "#16a34a" },
+                      py: 1.5,
+                      mt: 2,
+                    }}
+                  >
+                    {loading ? (
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                      >
+                        <CircularProgress size={20} sx={{ color: "white" }} />
+                        <span>Submitting...</span>
+                      </Box>
+                    ) : (
+                      "Submit Issue"
+                    )}
+                  </Button>
+                </Box>
+              </DashboardCard>
             </Grid>
-          </DashboardCard>
+          </Grid>
         </TabPanel>
 
         {/* My Issues Tab */}
@@ -1164,56 +1485,7 @@ const CitizenDashBoard = () => {
 
         {/* Profile Tab */}
         <TabPanel value={tabValue} index={4}>
-          <DashboardCard>
-            <Typography variant="h6" gutterBottom sx={{ color: "#22c55e" }}>
-              Profile Settings
-            </Typography>
-            <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  fullWidth
-                  label="Full Name"
-                  variant="outlined"
-                  sx={{ mb: 2 }}
-                />
-                <TextField
-                  fullWidth
-                  label="Email"
-                  variant="outlined"
-                  sx={{ mb: 2 }}
-                />
-                <TextField
-                  fullWidth
-                  label="Phone"
-                  variant="outlined"
-                  sx={{ mb: 2 }}
-                />
-                <Button
-                  variant="contained"
-                  sx={{
-                    bgcolor: "#22c55e",
-                    "&:hover": { bgcolor: "#16a34a" },
-                  }}
-                >
-                  Update Profile
-                </Button>
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <Typography variant="h6" gutterBottom>
-                  Activity History
-                </Typography>
-                <List>
-                  {/* Sample activity items - replace with actual data */}
-                  <ListItem>
-                    <ListItemText
-                      primary="Issue Reported"
-                      secondary="March 15, 2024"
-                    />
-                  </ListItem>
-                </List>
-              </Grid>
-            </Grid>
-          </DashboardCard>
+          <ProfileSection />
         </TabPanel>
 
         {/* Notifications Tab */}
