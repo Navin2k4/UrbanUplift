@@ -23,6 +23,7 @@ import GovernmentSignIn from "./pages/auth/GovernmentSignIn";
 import CollegeSignIn from "./pages/auth/CollegeSignIn";
 import CitizenDashBoard from "./pages/Dashboard/CitizenDashboard";
 import NGODasboard from "./pages/Dashboard/NGODasboard";
+import OfficialDashboard from "./pages/Dashboard/OfficialDashboard";
 
 function App() {
   return (
@@ -45,9 +46,13 @@ function App() {
 
               {/* Auth Routes */}
               <Route path="/signin/citizen" element={<CitizenSignIn />} />
-              <Route path="/dashboard/citizen" element={<CitizenDashBoard/>}/>
-              <Route path="/dashboard/ngo" element={<NGODasboard/>}/>
+              <Route path="/dashboard/citizen" element={<CitizenDashBoard />} />
+              <Route path="/dashboard/ngo" element={<NGODasboard />} />
               <Route path="/signin/ngo" element={<NGOSignIn />} />
+              <Route
+                path="/dashboard/:department"
+                element={<OfficialDashboard />}
+              />
               <Route path="/signin/government" element={<GovernmentSignIn />} />
               <Route path="/signin/college" element={<CollegeSignIn />} />
             </Routes>

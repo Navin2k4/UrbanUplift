@@ -13,15 +13,12 @@ import {
 
 const router = express.Router();
 
-// Dashboard r
 router.get("/stats", getDashboardStats);
 router.get("/recent", getRecentActivities);
 router.get("/status/:status", getReportsByStatus);
 
-// Issue classification route
 router.post("/classify", classifyIssue);
 
-// CRUD routes
 router.get("/", getReport);
 router.get("/:id", getReportByID);
 router.post("/", createReport);

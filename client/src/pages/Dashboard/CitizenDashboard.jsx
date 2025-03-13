@@ -710,28 +710,28 @@ const CitizenDashBoard = () => {
   };
 
   // Update the Stats Cards section in the Dashboard Tab
-  const statsCards = [
-    {
-      title: "Active Requests",
-      value: dashboardStats?.statusDistribution?.pending || 0,
-      icon: <Assignment />,
-    },
-    {
-      title: "In Progress",
-      value: dashboardStats?.statusDistribution?.inProgress || 0,
-      icon: <Construction />,
-    },
-    {
-      title: "Resolved Issues",
-      value: dashboardStats?.statusDistribution?.resolved || 0,
-      icon: <CheckCircle />,
-    },
-    {
-      title: "Total Reports",
-      value: dashboardStats?.totalIssues || 0,
-      icon: <Assessment />,
-    },
-  ];
+  // const statsCards = [
+  //   {
+  //     title: "Active Requests",
+  //     value: dashboardStats?.statusDistribution?.pending || 0,
+  //     icon: <Assignment />,
+  //   },
+  //   {
+  //     title: "In Progress",
+  //     value: dashboardStats?.statusDistribution?.inProgress || 0,
+  //     icon: <Construction />,
+  //   },
+  //   {
+  //     title: "Resolved Issues",
+  //     value: dashboardStats?.statusDistribution?.resolved || 0,
+  //     icon: <CheckCircle />,
+  //   },
+  //   {
+  //     title: "Total Reports",
+  //     value: dashboardStats?.totalIssues || 0,
+  //     icon: <Assessment />,
+  //   },
+  // ];
 
   // Update the Service Requests Chart data
   const serviceRequestData =
@@ -824,7 +824,7 @@ const CitizenDashBoard = () => {
                   animate="animate"
                   transition={{ delay: index * 0.1 }}
                 >
-                  <StatsCard>
+                  {/* <StatsCard>
                     <CardContent>
                       <Box
                         sx={{
@@ -844,7 +844,7 @@ const CitizenDashBoard = () => {
                         </IconButton>
                       </Box>
                     </CardContent>
-                  </StatsCard>
+                  </StatsCard> */}
                 </motion.div>
               </Grid>
             ))}
