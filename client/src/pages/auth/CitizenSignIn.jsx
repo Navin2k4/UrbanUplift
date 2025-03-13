@@ -1,25 +1,94 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Card } from "primereact/card";
 import { InputText } from "primereact/inputtext";
 import { Password } from "primereact/password";
 import { Button } from "primereact/button";
 import { Divider } from "primereact/divider";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { Toast } from "primereact/toast";
+import Cookies from "js-cookie";
 
 const CitizenSignIn = () => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
+  const [loading, setLoading] = useState(false);
+  const toast = useRef(null);
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
+    setLoading(true);
+
+    try {
+      const response = await fetch("/api/auth/citizen/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+        credentials: "include", // Important for cookies
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Login failed");
+      }
+
+      const data = await response.json();
+      const { user, token } = data;
+
+      // Store token in cookie (expires in 7 days)
+      Cookies.set("token", token, {
+        expires: 7,
+        secure: true,
+        sameSite: "strict",
+      });
+
+      // Store user data in cookie (expires in 7 days)
+      Cookies.set("user", JSON.stringify(user), {
+        expires: 7,
+        secure: true,
+        sameSite: "strict",
+      });
+
+      // Also store in localStorage as backup
+      localStorage.setItem("user", JSON.stringify(user));
+
+      toast.current.show({
+        severity: "success",
+        summary: "Success",
+        detail: "Login successful",
+      });
+
+      navigate("/dashboard/citizen");
+    } catch (error) {
+      toast.current.show({
+        severity: "error",
+        summary: "Error",
+        detail: error.message || "Failed to login",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = () => {
+    window.location.href = "/api/auth/google";
+  };
+
+  const handleFacebookLogin = () => {
+    window.location.href = "/api/auth/facebook";
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <Toast ref={toast} />
       <div className="flex min-h-screen">
         {/* Left Section - Content */}
         <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-green-600 to-green-700 p-12 relative">
@@ -262,6 +331,7 @@ const CitizenSignIn = () => {
                   type="submit"
                   label="Sign In"
                   icon="pi pi-user"
+                  loading={loading}
                   className="w-full bg-green-600 hover:bg-green-700"
                 />
               </form>
@@ -275,13 +345,13 @@ const CitizenSignIn = () => {
                   label="Google"
                   icon="pi pi-google"
                   className="p-button-outlined"
-                  onClick={() => console.log("Google sign in")}
+                  onClick={handleGoogleLogin}
                 />
                 <Button
                   label="Facebook"
                   icon="pi pi-facebook"
                   className="p-button-outlined"
-                  onClick={() => console.log("Facebook sign in")}
+                  onClick={handleFacebookLogin}
                 />
               </div>
 

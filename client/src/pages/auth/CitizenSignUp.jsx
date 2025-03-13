@@ -3,58 +3,74 @@ import { Card } from "primereact/card";
 import { InputText } from "primereact/inputtext";
 import { Password } from "primereact/password";
 import { Button } from "primereact/button";
-import { Dropdown } from "primereact/dropdown";
 import { Divider } from "primereact/divider";
 import { motion } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import { Toast } from "primereact/toast";
-import axios from "axios";
 
-const CollegeSignIn = () => {
+const CitizenSignUp = () => {
   const [formData, setFormData] = useState({
-    collegeId: "",
+    name: "",
     email: "",
     password: "",
-    role: "",
+    confirmPassword: "",
+    phoneNumber: "",
   });
   const [loading, setLoading] = useState(false);
   const toast = useRef(null);
   const navigate = useNavigate();
 
-  const roles = [
-    { label: "College Administrator", value: "admin" },
-    { label: "Department Head", value: "head" },
-    { label: "Faculty Coordinator", value: "faculty" },
-    { label: "Student", value: "student" },
-  ];
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
-    try {
-      const response = await axios.post("/api/auth/college/login", {
-        ...formData,
-        role: "NSS",
+    if (formData.password !== formData.confirmPassword) {
+      toast.current.show({
+        severity: "error",
+        summary: "Error",
+        detail: "Passwords do not match",
       });
-      const { token, user } = response.data;
+      setLoading(false);
+      return;
+    }
 
-      // Store token and user data
-      localStorage.setItem("token", token);
+    try {
+      const response = await fetch("/api/auth/citizen/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          phoneNumber: formData.phoneNumber,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Registration failed");
+      }
+
+      const data = await response.json();
+      const { user } = data;
+
+      // Store user data
       localStorage.setItem("user", JSON.stringify(user));
 
       toast.current.show({
         severity: "success",
         summary: "Success",
-        detail: "Logged in successfully",
+        detail: "Registration successful",
       });
 
-      navigate("/college/dashboard");
+      navigate("/signin/citizen");
     } catch (error) {
       toast.current.show({
         severity: "error",
         summary: "Error",
-        detail: error.response?.data?.message || "Failed to login",
+        detail: error.message || "Failed to register",
       });
     } finally {
       setLoading(false);
@@ -65,61 +81,60 @@ const CollegeSignIn = () => {
     <div className="min-h-screen bg-gray-50">
       <Toast ref={toast} />
       <div className="flex min-h-screen">
-        {/* Left Section - Image and Content */}
+        {/* Left Section - Content */}
         <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-green-600 to-green-700 p-12 relative">
           <div className="absolute inset-0 bg-black opacity-10"></div>
           <div className="relative z-10 flex flex-col justify-between text-white">
             <div>
               <h2 className="text-4xl font-bold mb-6">
-                Welcome to UrbanUplift Educational Portal
+                Join UrbanUplift Community
               </h2>
               <p className="text-xl mb-8">
-                Join our platform to engage your students in meaningful
-                community service and urban development projects.
+                Be part of the change. Register now to report issues, track
+                progress, and make your community better.
               </p>
 
               <div className="space-y-6">
+                <div className="flex items-start space-x-4">
+                  <div className="p-3 bg-white/10 rounded-lg">
+                    <i className="pi pi-megaphone text-2xl"></i>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold mb-2">
+                      Report Issues
+                    </h3>
+                    <p className="text-green-100">
+                      Easily report community issues with photos and
+                      descriptions.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-4">
+                  <div className="p-3 bg-white/10 rounded-lg">
+                    <i className="pi pi-chart-line text-2xl"></i>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold mb-2">
+                      Track Progress
+                    </h3>
+                    <p className="text-green-100">
+                      Monitor the status of reported issues in real-time.
+                    </p>
+                  </div>
+                </div>
+
                 <div className="flex items-start space-x-4">
                   <div className="p-3 bg-white/10 rounded-lg">
                     <i className="pi pi-users text-2xl"></i>
                   </div>
                   <div>
                     <h3 className="text-xl font-semibold mb-2">
-                      Student Engagement
+                      Community Impact
                     </h3>
                     <p className="text-green-100">
-                      Connect your students with real-world community projects
-                      and volunteer opportunities.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start space-x-4">
-                  <div className="p-3 bg-white/10 rounded-lg">
-                    <i className="pi pi-chart-bar text-2xl"></i>
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-semibold mb-2">
-                      Impact Tracking
-                    </h3>
-                    <p className="text-green-100">
-                      Monitor and measure your institution's contribution to
-                      community development.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-start space-x-4">
-                  <div className="p-3 bg-white/10 rounded-lg">
-                    <i className="pi pi-verified text-2xl"></i>
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-semibold mb-2">
-                      Certification
-                    </h3>
-                    <p className="text-green-100">
-                      Provide verified certificates for student volunteer work
-                      and project participation.
+                      Connect with neighbors and see the direct impact of your
+                      contributions.
                     </p>
                   </div>
                 </div>
@@ -129,19 +144,19 @@ const CollegeSignIn = () => {
             <div className="mt-auto">
               <Divider className="border-white/20" />
               <div className="flex items-center justify-between text-sm">
-                <span>Need help? Contact support</span>
-                <Button
-                  label="Learn More"
-                  icon="pi pi-arrow-right"
-                  className="p-button-text p-button-white"
-                  onClick={() => (window.location.href = "/contact")}
-                />
+                <span>Already making a difference?</span>
+                <Link
+                  to="/signin/citizen"
+                  className="text-white hover:text-green-100"
+                >
+                  Sign in here →
+                </Link>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Right Section - Sign In Form */}
+        {/* Right Section - Sign Up Form */}
         <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
           <motion.div
             initial={{ opacity: 0, x: 20 }}
@@ -152,50 +167,29 @@ const CollegeSignIn = () => {
             <Card className="p-6 shadow-2xl">
               <div className="text-center mb-8">
                 <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                  College Portal Sign In
+                  Create Account
                 </h2>
                 <p className="text-gray-600">
-                  Access your institution's dashboard and manage community
-                  engagement
+                  Join your community and start making a difference
                 </p>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
                   <label
-                    htmlFor="collegeId"
+                    htmlFor="name"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Institution ID
+                    Full Name
                   </label>
                   <InputText
-                    id="collegeId"
-                    value={formData.collegeId}
+                    id="name"
+                    value={formData.name}
                     onChange={(e) =>
-                      setFormData({ ...formData, collegeId: e.target.value })
+                      setFormData({ ...formData, name: e.target.value })
                     }
                     className="mt-1 w-full"
-                    placeholder="Enter your institution ID"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="role"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Role
-                  </label>
-                  <Dropdown
-                    id="role"
-                    value={formData.role}
-                    options={roles}
-                    onChange={(e) =>
-                      setFormData({ ...formData, role: e.value })
-                    }
-                    className="mt-1 w-full"
-                    placeholder="Select your role"
+                    placeholder="Enter your full name"
                     required
                   />
                 </div>
@@ -222,6 +216,25 @@ const CollegeSignIn = () => {
 
                 <div>
                   <label
+                    htmlFor="phoneNumber"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Phone Number
+                  </label>
+                  <InputText
+                    id="phoneNumber"
+                    type="tel"
+                    value={formData.phoneNumber}
+                    onChange={(e) =>
+                      setFormData({ ...formData, phoneNumber: e.target.value })
+                    }
+                    className="mt-1 w-full"
+                    placeholder="Enter your phone number"
+                  />
+                </div>
+
+                <div>
+                  <label
                     htmlFor="password"
                     className="block text-sm font-medium text-gray-700"
                   >
@@ -235,55 +248,52 @@ const CollegeSignIn = () => {
                     }
                     className="mt-1 w-full"
                     toggleMask
-                    feedback={false}
-                    placeholder="Enter your password"
+                    placeholder="Create a password"
                     required
                   />
                 </div>
 
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <input
-                      id="remember-me"
-                      name="remember-me"
-                      type="checkbox"
-                      className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-                    />
-                    <label
-                      htmlFor="remember-me"
-                      className="ml-2 block text-sm text-gray-700"
-                    >
-                      Remember me
-                    </label>
-                  </div>
-
-                  <div className="text-sm">
-                    <Link
-                      to="/forgot-password"
-                      className="text-green-600 hover:text-green-500"
-                    >
-                      Forgot password?
-                    </Link>
-                  </div>
+                <div>
+                  <label
+                    htmlFor="confirmPassword"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Confirm Password
+                  </label>
+                  <Password
+                    id="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        confirmPassword: e.target.value,
+                      })
+                    }
+                    className="mt-1 w-full"
+                    toggleMask
+                    feedback={false}
+                    placeholder="Confirm your password"
+                    required
+                  />
                 </div>
 
                 <Button
                   type="submit"
-                  label="Sign In"
-                  icon="pi pi-sign-in"
+                  label="Sign Up"
+                  icon="pi pi-user-plus"
                   loading={loading}
                   className="w-full bg-green-600 hover:bg-green-700"
                 />
               </form>
 
-              <div className="mt-6 text-center">
+              <div className="text-center mt-6">
                 <p className="text-gray-600">
-                  New institution?{" "}
+                  Already have an account?{" "}
                   <Link
-                    to="/signup/college"
+                    to="/signin/citizen"
                     className="text-green-600 hover:text-green-500 font-medium"
                   >
-                    Register here
+                    Sign in
                   </Link>
                 </p>
               </div>
@@ -295,4 +305,4 @@ const CollegeSignIn = () => {
   );
 };
 
-export default CollegeSignIn;
+export default CitizenSignUp;

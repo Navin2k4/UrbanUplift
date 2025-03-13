@@ -1,11 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Card } from "primereact/card";
 import { InputText } from "primereact/inputtext";
 import { Password } from "primereact/password";
 import { Button } from "primereact/button";
 import { Divider } from "primereact/divider";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { Toast } from "primereact/toast";
+import axios from "axios";
 
 const NGOSignIn = () => {
   const [formData, setFormData] = useState({
@@ -13,14 +15,46 @@ const NGOSignIn = () => {
     email: "",
     password: "",
   });
+  const [loading, setLoading] = useState(false);
+  const toast = useRef(null);
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
+    setLoading(true);
+
+    try {
+      const response = await axios.post("/api/auth/ngo/login", {
+        ...formData,
+        role: "NGO",
+      });
+      const { token, user } = response.data;
+
+      // Store token and user data
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
+
+      toast.current.show({
+        severity: "success",
+        summary: "Success",
+        detail: "Logged in successfully",
+      });
+
+      navigate("/ngo/dashboard");
+    } catch (error) {
+      toast.current.show({
+        severity: "error",
+        summary: "Error",
+        detail: error.response?.data?.message || "Failed to login",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <Toast ref={toast} />
       <div className="flex min-h-screen">
         {/* Left Section - Content */}
         <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-green-600 to-green-700 p-12 relative">
@@ -323,6 +357,7 @@ const NGOSignIn = () => {
                   type="submit"
                   label="Sign In"
                   icon="pi pi-building"
+                  loading={loading}
                   className="w-full bg-green-600 hover:bg-green-700"
                 />
               </form>
