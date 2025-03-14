@@ -842,7 +842,6 @@ const CitizenDashBoard = () => {
         priority: selectedPriority,
         aiPriority: issueAnalysis?.severity || selectedPriority,
         createdById: user.id,
-        // Add location details
         coordinates: locationDetails?.coordinates || null,
         address: locationDetails?.address || location,
         district: locationDetails?.raw?.locality || null,
@@ -865,19 +864,20 @@ const CitizenDashBoard = () => {
       if (data) {
         setAlert({
           show: true,
-          message: "Issue reported successfully!",
+          message:
+            "Issue reported successfully! Check your email for confirmation.",
           severity: "success",
         });
 
         // Clear form
-        setImageUrl("");
-        setDescription("");
-        setLocation("");
-        setIssueAnalysis(null);
-        setSelectedPriority("medium");
+        resetForm();
 
-        // Refresh dashboard data after submitting new issue
+        // Switch to My Issues tab
+        setTabValue(2);
+
+        // Refresh dashboard data and issues
         fetchDashboardData();
+        fetchIssuesByStatus();
       }
     } catch (error) {
       console.error("Error submitting issue:", error);
@@ -889,6 +889,15 @@ const CitizenDashBoard = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const resetForm = () => {
+    setImageUrl("");
+    setDescription("");
+    setLocation("");
+    setIssueAnalysis(null);
+    setSelectedPriority("medium");
+    setLocationDetails(null);
   };
 
   // Update the Stats Cards section in the Dashboard Tab

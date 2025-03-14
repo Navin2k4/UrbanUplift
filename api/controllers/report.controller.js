@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import axios from "axios";
 import dotenv from "dotenv";
+import { sendIssueNotification } from "../utils/emailService.js";
 
 dotenv.config();
 const prisma = new PrismaClient();
@@ -156,7 +157,7 @@ export const getRecentActivities = async (req, res) => {
   }
 };
 
-const classifyImage = async (imageUrl) => {
+const classifyReport = async (imageUrl) => {
   try {
     const response = await axios.post(
       IMAGE_MODEL_URL,
@@ -386,26 +387,86 @@ export const createReport = async (req, res) => {
     if (!description || !category || !location || !createdById) {
       return res.status(400).json({
         error: "Missing required fields",
+        details: {
+          description: !description,
+          category: !category,
+          location: !location,
+          createdById: !createdById,
+        },
       });
     }
 
+    // Get user with email in a single query
+    const user = await prisma.user.findUnique({
+      where: { id: createdById },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        error: "User not found",
+        details: `No user found with ID: ${createdById}`,
+      });
+    }
+
+    // Create the report with user information
     const report = await prisma.issue.create({
       data: {
         description,
         category,
         location,
         imageUrl,
-        priority,
+        priority: priority || "MEDIUM",
         aiPriority,
-        createdById,
+        createdById: user.id,
         coordinates,
         address,
         district,
         state,
+        status: "PENDING", // Set initial status
+      },
+      include: {
+        createdBy: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
       },
     });
 
-    res.status(201).json(report);
+    // Send email notification
+    try {
+      await sendIssueNotification(
+        {
+          ...report,
+          userName: user.name, // Add user name for personalization
+          priority: report.priority.toUpperCase(),
+          createdAt: new Date().toISOString(),
+        },
+        user.email
+      );
+
+      // Return success with email status
+      res.status(201).json({
+        success: true,
+        message: "Issue reported successfully and notification sent",
+        data: report,
+      });
+    } catch (emailError) {
+      // Log email error but still return success for report creation
+      console.error("Error sending email notification:", emailError);
+      res.status(201).json({
+        success: true,
+        message: "Issue reported successfully but notification failed",
+        data: report,
+        emailError: "Failed to send email notification",
+      });
+    }
   } catch (error) {
     console.error("Error creating report:", error);
     res.status(500).json({
